@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+    <head>
+        <title>CESMII Machine View</title>
+        <link rel="shortcut icon" href="./favicon.ico">
+        <link rel="stylesheet" href="style.css" type="text/css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Encode+Sans+Condensed:300,700">
+        <link rel="stylesheet" href="widgets.css" type="text/css">
+        <link rel="stylesheet" href="error.css" type="text/css">
+        <!--chart.js-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" integrity="sha512-ElRFoEQdI5Ht6kZvyzXhYG9NqjtkmlkfYk0wr6wHxU9JEHakS7UJZNeml5ALk+8IKlU6jDgMabC3vkumRokgJA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="gauge.js"></script>
+        <script type="text/javascript" src="TypeSupport/typeSupport.js"></script>
+        <script defer type="text/javascript" src="defaults.js"></script>
+        <script defer type="text/javascript" src="config.js"></script>
+        <script defer type="text/javascript" src="smip.js"></script>
+        <script defer type="text/javascript" src="smip-queries.js"></script>
+        <script defer type="text/javascript" src="widgets.js"></script>
+        <script defer type="text/javascript" src="app.js"></script>
+    </head>
+    <body onload="activate()">
+        <!-- title bars -->
+        <div class="titles">
+            <div class="toptitle">
+                <img id="imgLogo" src="cesmii.png" style="height:40px" onerror="null;this.src='cesmii.png';console.log('Failed to load custom logo, reverting to defatult!')">
+                <button onclick="loadMachines()" id="btnRefresh" style="float:right; width:100px;height:44px;">Refresh</button>
+                <button onclick="toggleElement('settings')" id="btnConfig" style="float:right; width:100px;height:44px;margin-right:14px;">Settings</button>
+            </div>
+            <h1 id="machineName">Loading...</h1>
+            <!-- toast alerts -->
+            <div id="toast" class="alert error" style="display:none;">
+                <label class="close" title="close" for="alert1">
+                    <i class="icon-remove" onclick="toggleElement('toast', 'none');updateLoop();"></i>
+                </label>
+                <p class="inner" id="toast-text">
+                </p>
+            </div>
+        </div>
+        <!-- main body -->
+        <div class="content">
+            <div id="layout">
+                <!-- side navigation -->
+                <div id="machines"></div>
+                <!-- details root: populated by loaded DetailsPane script  -->
+                <div id="details">
+                    
+                </div>
+             </div>
+        </div>
+        <!-- settings pop-up -->
+        <div id="settings" style="display:none; float:right">
+            <p>SMIP Settings</p>
+            <form id="configForm" action="javascript:saveConfig()" accept-charset="utf-8">
+                
+                <div id="divFavorites" style="display: none;">
+                    <label for="smipfavorite">Favorites</label><br>
+                    <select name="smipfavorite" id="smipfavorite" onchange="selectFavorite()">
+                    </select><br>
+                </div>
+
+                <label for="smipurl">SMIP URL</label><br>
+                <input type="text" id="smipurl" name="smipurl" required onkeypress="reflectFavorite()"><br>
+
+                <label for="authenticator">Authenticator</label><br>
+                <input type="text" id="authenticator" name="authenticator" required><br>
+
+                <label for="smipusername">Username</label><br>
+                <input type="text" id="smipusername" name="smipusername" required><br>
+
+                <label for="password">Password</label><br>
+                <input type="password" id="password" name="password" required><br>
+
+                <label for="role">Role</label><br>
+                <input type="text" id="role" name="role" required><br>
+
+                <label for="machineParentId">Parent ID</label><br>
+                <input type="text" id="machineParentId" name="machineParentId"><br>
+
+                <input type="checkbox" id="saveFavorite" name="saveFavorite">
+                <label for="saveFavorite">Save as Favorite</label><br>
+                
+                <p>
+                    <input type="submit" value="Save">
+                </p>
+            </form>
+        </div>
+    </body>
+</html>

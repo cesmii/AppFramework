@@ -1,0 +1,117 @@
+
+.widget {
+  /*color: pink;*/
+  z-index: -1;
+}
+.widget img { 
+  width: 64px; height:64px;
+  pointer-events: none;
+}
+.widget p {
+  padding: 0px;
+  margin-top: 0px;
+  margin-bottom: 5px;
+  clear: both;
+  pointer-events: none;
+}
+.machine {
+  color: black;
+  background-color: lightgray;
+  border-radius: 20px;
+  border: 1px solid black;
+  display: inline-block;
+  padding: 20px;
+  margin: 15px;
+  min-width: 130px;
+  text-align: center;
+  text-transform: uppercase;
+  -webkit-box-shadow: rgb(0 0 0 / 30%) 0 1px 10px;
+  -moz-box-shadow: rgba(0,0,0,0.3) 0 1px 10px;
+  box-shadow: rgb(0 0 0 / 30%) 0 1px 10px;
+}
+.machine:hover {
+  background-color:var(--blue);
+}
+.machine.selected {
+  background-color: var(--darkblue);
+  color:white;
+}
+.machine.updating {
+  animation: fadeInFromNone 0.5s ease-out;
+}
+.machine_status {
+  margin-top: 10px;
+  text-align: center;
+  font-weight: lighter;
+  font-size: smaller;
+}
+
+.component {
+  color: #243782;
+  background-color: #ffffff;
+  border-radius: 15px 0;
+  display: table;
+  opacity: .9;
+  padding: 20px;
+  margin: 15px 0;
+  min-height: 60px;
+  text-align: initial;
+  text-transform: initial;
+  width: 120px;
+}
+.component.updating {
+  animation: fadeInFromNone 0.5s ease-out;
+}
+.component.faulted {
+  background-color: mistyrose !important;
+}
+.component.running {
+  background-color: lightgreen !important;
+}
+
+/* animations */
+@-webkit-keyframes fadeInFromNone {
+  81% {
+      display: block;
+      opacity: .1;
+  }
+
+  100% {
+      display: block;
+      opacity: 1;
+  }
+}
+@-moz-keyframes fadeInFromNone {
+    81% {
+        display: block;
+        opacity: .1;
+    }
+
+    100% {
+        display: block;
+        opacity: 1;
+    }
+}
+@-o-keyframes fadeInFromNone {
+    81% {
+        display: block;
+        opacity: .1;
+    }
+
+    100% {
+        display: block;
+        opacity: 1;
+    }
+}
+@keyframes fadeInFromNone {
+    81% {
+        display: block;
+        opacity: .1;
+    }
+
+    100% {
+        display: block;
+        opacity: 1;
+    }
+}
+  

@@ -1,0 +1,103 @@
+:root {
+  --navwidth: 200px;
+  --blue: #01acef;
+  --darkblue: #2a48da;
+  --green: #6ba443;
+}
+body {
+  background: #f0f0f0;
+  color: var(--darkblue);
+  font-family: "Encode Sans Condensed",sans-serif;
+  letter-spacing: .01em;
+  margin: 0;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+} 
+button {
+  color: black;
+  font-family: "Encode Sans Condensed",sans-serif;
+  letter-spacing: .01em;
+  padding: 10px 20px;
+  text-transform: uppercase;
+}
+h1 {
+  background: var(--blue);
+  color: #ffffff;
+  font-weight: bolder;
+  font-size: 18px;
+  margin-top: 0;
+  padding: 12px;
+  text-align: center;
+  text-transform: uppercase;
+}
+.content {
+  margin: 0px;
+  margin-top:-10px;
+  position: absolute;
+  top: 120px; /* Header Height */
+  bottom: 0px; /* Footer Height */
+} 
+.logo {
+  height: 50px;
+  padding-left: 25px;
+  width: auto;
+} 
+.toptitle {
+  background-color: var(--darkblue);
+  padding: 10px 20px;
+}
+
+#machines {
+  width: var(--navwidth);
+  height: 100%;
+  float:left;
+  border-right: 2px solid dimgray;
+  position: absolute;
+}
+#details {
+  margin-left: var(--navwidth);
+  padding: 10px;
+}
+
+/* Settings popup */
+#settings {
+  padding: 18px;
+  background-color:lightgray;
+  border:1px solid rgb(99, 99, 99);
+  color:black;
+  border-radius: 8px;
+  position: absolute;
+  top: 72px;
+  right: 60px;
+  z-index: 1; 
+  width: 230; 
+  height: 380; 
+  overflow: auto;
+  -webkit-box-shadow: rgb(0 0 0 / 30%) 0 1px 10px;
+  -moz-box-shadow: rgba(0,0,0,0.3) 0 1px 10px;
+  box-shadow: rgb(0 0 0 / 30%) 0 1px 10px;
+}
+#settings p {
+  text-align: center;font-weight: bold;
+}
+#settings select {
+    min-width: 190px;
+    margin-top: 4px;
+    margin-bottom: 8px;
+    padding:4px;
+}
+#settings input[type="text"] {
+  margin-top: 4px;
+  margin-bottom: 8px;
+  padding:4px;
+}
+#settings input[type="password"] {
+  margin-top: 4px;
+  margin-bottom: 8px;
+  padding:4px;
+}
+#settings input[type="submit"] {
+  padding:8px;
+}
