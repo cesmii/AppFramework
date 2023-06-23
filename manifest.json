@@ -3,7 +3,6 @@
  "short_name": "AppFramework",
  "start_url": "index.html",
  "description": "CESMII's AppFramework provides a simple environment for creating SMProfile-based web apps. Learn more at github.com/cesmii/AppFramework.",
- "id": "manifest.json",
  "display": "standalone",
  "icons": [
   {
