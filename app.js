@@ -64,7 +64,7 @@ async function sendSmipQuery(theQuery, callBack) {
                     callBack(await smip.performGraphQLRequest(theQuery, config.smipUrl, currentBearerToken), theQuery, this);                        
                 }
                 catch (ex) {
-                    log("info", "Authentication or bearer token refresh failure: " + JSON.stringify(ex));
+                    log("error", "Authentication or bearer token refresh failure: " + JSON.stringify(ex));
                     showToast("Error!", "Attempts to authenticate with the SMIP using configured credentials have failed. Check your settings and re-try.");
                     stopUpdate();
                     document.getElementById("btnRefresh").innerHTML = "Refresh";

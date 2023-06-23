@@ -31,9 +31,8 @@
                     else
                         messageText += argument + " ";
                 };
-                messageLevel = logLevels[messageLevel];
-                if (messageLevel >= logLevel) {
-                    log("info", messageText);
+                if (logLevels[messageLevel] >= logLevel) {
+                    console.log(messageLevel + ": " + messageText);
                 }
             }
         </script>
@@ -42,7 +41,7 @@
         <!-- title bars -->
         <div class="titles">
             <div class="toptitle">
-                <img id="imgLogo" src="cesmii.png" style="height:40px" onerror="null;this.src='cesmii.png';log('info', 'Failed to load custom logo, reverting to defatult!')">
+                <img id="imgLogo" src="cesmii.png" style="height:40px" onerror="null;this.src='cesmii.png';log('warn', 'Failed to load custom logo, reverting to defatult!')">
                 <button onclick="loadMachines()" id="btnRefresh" style="float:right; width:100px;height:44px;">Refresh</button>
                 <button onclick="toggleElement('settings')" id="btnConfig" style="float:right; width:100px;height:44px;margin-right:14px;">Settings</button>
             </div>
