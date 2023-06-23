@@ -190,12 +190,11 @@ function deleteElements(className) {
 function selectFavorite() {
     var form = document.getElementById("configForm").elements;
     var value = form.smipfavorite.options[form.smipfavorite.selectedIndex].value;
-    console.log ("selected: " + value, form.smipfavorite.options[form.smipfavorite.selectedIndex].text)
     if (value > -1) {
-        config = configFavorites[value];
+        config.user = configFavorites[value];
         updateConfigForm();
     } else {
-        config = defaults;
+        config.user = defaults.user;
         document.getElementById("configForm").reset();
     }
 }
@@ -237,7 +236,6 @@ function updateConfigForm() {
         opt.innerText = "";
         form.smipfavorite.appendChild(opt);
         document.getElementById("divFavorites").style.display = "block";
-        
         for (var f=0;f<configFavorites.length;f++) {
             var opt = document.createElement("option");
             opt.value = f;
@@ -259,7 +257,6 @@ function updateConfigForm() {
 
 function saveConfig() {
     logger.log("info", "Saving Config");
-
     var form = document.getElementById("configForm").elements;
     config.user.smipUrl = form.smipurl.value;
     config.user.authenticator = form.authenticator.value;
@@ -276,12 +273,12 @@ function saveConfig() {
         var foundFavorite = false;
         for (var f=0;f<configFavorites.length;f++) {
             if (configFavorites[f].smipUrl == config.user.smipUrl) {
-                configFavorites[f] = config;
+                configFavorites[f] = config.user;
                 foundFavorite = true;
             }
         }
         if (!foundFavorite) {
-            configFavorites.push(config);
+            configFavorites.push(config.user);
         } 
         setCookie("favorites", configFavorites, 90);
     }
