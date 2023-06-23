@@ -1,7 +1,7 @@
 var errorRetries = 0;
 var errorHandled = false;
 var updateTimer = null;
-var updateRate = 6000;
+var updateRate = 5000;
 var currentBearerToken = "";
 var currentDetailPane = null;
 var configFavorites = null;
@@ -24,6 +24,10 @@ function activate() {
     if (config.app.logLevel == "info") {
         logger.log("info", "Activating app with verbose logging.");
     }
+    if (config.app.updateRate && config.app.updateRate > 2000)
+        updateRate = config.app.updateRate;
+    else
+        logger.log("error", "Invalid update rate in config, default will be used!");
 }
 
 function detailPaneReady() {
@@ -33,14 +37,29 @@ function detailPaneReady() {
 
 function loadMachines() {
     document.getElementById("btnRefresh").innerHTML = "<img src=\"spinner.gif\" height=\"22px\">";
-    if (config.user.smipUrl)
-        sendSmipQuery(queries.getEquipments(config.app.machineType, config.app.modelParentId), showMachines);
+    if (config.user.smipUrl && config.user.smipUrl != "" &&
+        config.user.authenticator && config.user.authenticator !== "" &&
+        config.user.username && config.user.username != "" &&
+        config.user.password && config.user.password != "" &&
+        config.user.role && config.user.role != "") {
+            sendSmipQuery(queries.getEquipments(config.app.machineType, config.app.modelParentId), showMachines.bind(this));
+        }
     else {
-        showMachines();
         document.getElementById("btnRefresh").innerHTML = "Refresh";
         if (config.app.machineType != "example") {
             toggleElement("settings", "block");
             stopUpdate();
+        } else {    //handle example case
+            if (!this.exampleDone) {
+                newMachine1 = new widgetFactory("example1", {"displayName": "Example #1", "typeName": "example", "id":"0001"}, null, typeSupport.getIconForType("example"), machineClicked);
+                document.getElementById("machines").appendChild(newMachine1.build(newMachine1));
+                newMachine2 = new widgetFactory("example2", {"displayName": "Example #2", "typeName": "example", "id":"0002"}, null, typeSupport.getIconForType("example"), machineClicked);
+                document.getElementById("machines").appendChild(newMachine2.build(newMachine2));
+                this.exampleDone = true;
+            }
+            if (currentDetailPane)
+                currentDetailPane.update();
+            document.getElementById("btnRefresh").innerHTML = "Refresh";
         }
     }
 }
@@ -90,7 +109,7 @@ async function sendSmipQuery(theQuery, callBack) {
     }
 }
 
-function showMachines(payload, query, self) {
+function showMachines(payload, query) {
     if (payload && payload.data && payload.data.equipments && payload.data.equipments.length != 0) {
         var discoveredMachines = [];
         payload.data.equipments.forEach (function(item, index, arr) {
@@ -119,22 +138,8 @@ function showMachines(payload, query, self) {
         if (discoveredMachines.length > 0 && currentDetailPane)
             currentDetailPane.update();
     } else {
-        //handle example case
-        if (config.app.machineType == "example") {
-            if (!this.exampleDone) {
-                //Create the widget
-                newMachine1 = new widgetFactory("example1", {"displayName": "Example #1", "typeName": "example", "id":"0001"}, null, typeSupport.getIconForType("example"), machineClicked);
-                document.getElementById("machines").appendChild(newMachine1.build(newMachine1));
-                newMachine2 = new widgetFactory("example2", {"displayName": "Example #2", "typeName": "example", "id":"0002"}, null, typeSupport.getIconForType("example"), machineClicked);
-                document.getElementById("machines").appendChild(newMachine2.build(newMachine2));
-                this.exampleDone = true;
-            }
-            if (currentDetailPane)
-                currentDetailPane.update();
-        } else {
-            logger.log("info", "Empty payload for equipments query. Nothing to populate.");
-            showToast("Warning!", "No compatible machine instances found on the SMIP instance. Please add equipment instances that match the SM Profile dependency.");    
-        }
+        logger.log("info", "Empty payload for equipments query. Nothing to populate.");
+        showToast("Warning!", "No compatible machine instances found on the SMIP instance. Please add equipment instances that match the SM Profile dependency.");    
     }
     //Update UI
     document.getElementById("btnRefresh").innerHTML = "Refresh";

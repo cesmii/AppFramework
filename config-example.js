@@ -5,6 +5,7 @@ config = {
         "title": "CESMII Machine View",
         "logo": "customlogo.png",
         "style": "custom.css",
+        "updateRate": 5000,         //high update rates will have global performance impact -- this interface is not intended for high speed data!
         "machineType": "example",   //to support a different type, you must load or create TypeSupport resources
         "logLevel": "error"       //levels are: error, warn, info
     }, 
