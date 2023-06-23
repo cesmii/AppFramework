@@ -219,6 +219,9 @@ async function loadConfig() {
     if (!configFavorites)
         configFavorites = [];
     updateConfigForm();
+
+    if (config.debug)
+        logLevel = logLevels.info;
 }
 
 function updateConfigForm() {
