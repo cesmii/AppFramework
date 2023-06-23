@@ -1,6 +1,7 @@
 config.js
 custom.css
 logo.png
+manifest.json
 TypeSupport/*
 !TypeSupport/example.css
 !TypeSupport/example.js
