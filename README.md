@@ -5,6 +5,10 @@ Extend by adding resources for each Profile (EquipmentType) you want to support 
 
 SymLinking is supported (if your host supports it)
 
+## See Also
+
+[AppFrameworkExtensions](https://github.com/cesmii/AppFrameworkExtensions)
+
 ## Credits
 
 - [ChartsJS](https://github.com/chartjs/Chart.js), used under a MIT license.
