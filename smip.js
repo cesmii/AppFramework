@@ -22,35 +22,36 @@ smip.performGraphQLRequest = async function performGraphQLRequest(query, endPoin
 }
 
 smip.getBearerToken = async function getBearerToken() {
-    if (config.authenticator && config.authenticator != "" &&
-        config.username && config.username != "" &&
-        config.password && config.password != "" &&
-        config.role && config.role != "") {
+    logger.log("info", "getBearerToken invoked!");
+    if (config.user.authenticator && config.user.authenticator != "" &&
+        config.user.username && config.user.username != "" &&
+        config.user.password && config.user.password != "" &&
+        config.user.role && config.user.role != "") {
             return new Promise(
                 async function (resolve, reject) {
                     // Step 1: Request a challenge
                     var theQuery = {
                         query: `mutation { authenticationRequest(input:
-                            {authenticator: "${config.authenticator}", 
-                            role: "${config.role}", 
-                            userName: "${config.username}"})
+                            {authenticator: "${config.user.authenticator}", 
+                            role: "${config.user.role}", 
+                            userName: "${config.user.username}"})
                             { jwtRequest { challenge, message } } 
                         }`
                     };
-                    var authResponse = await smip.performGraphQLRequest(theQuery, config.smipUrl);
+                    var authResponse = await smip.performGraphQLRequest(theQuery, config.user.smipUrl);
                     var challenge = authResponse.data.authenticationRequest.jwtRequest.challenge;
         
                     // Step 2: Get token
                     var theQuery = {
                         query: `mutation { authenticationValidation(input:
-                            {authenticator:"${config.authenticator}", 
-                            signedChallenge: "${challenge}|${config.password}"})
+                            {authenticator:"${config.user.authenticator}", 
+                            signedChallenge: "${challenge}|${config.user.password}"})
                             { jwtClaim } 
                         }`
                     };
-                    var challengeResponse = await smip.performGraphQLRequest(theQuery, config.smipUrl);
+                    var challengeResponse = await smip.performGraphQLRequest(theQuery, config.user.smipUrl);
                     var newJwtToken = "Bearer " + challengeResponse.data.authenticationValidation.jwtClaim;
-                    log("info", "Successfully authenticated with SMIP");
+                    logger.log("info", "Successfully authenticated with SMIP");
                     resolve(newJwtToken);
         
                     //TODO: Handle errors!
@@ -58,7 +59,7 @@ smip.getBearerToken = async function getBearerToken() {
             );
         }
     else {
-        log("info", "Insufficient credentials configured for SMIP authentication. Check config.");
+        logger.log("info", "Insufficient credentials configured for SMIP authentication. Check config.");
         return false;
     }
 }
@@ -79,7 +80,7 @@ smip.parseGraphQLForQueryParams = function(queryType, queryBody) {
         queryParams = JSON.parse(queryParams);
         return queryParams;
     } catch(error) {
-        log("info", error, "Could not parse query params to JSON: " + queryParts[0]);
+        logger.log("info", error, "Could not parse query params to JSON: " + queryParts[0]);
         return false;
     }
 };

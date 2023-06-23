@@ -5,25 +5,25 @@ const typeSupport = {
         var scriptPath = typeName + ".js";
         var cssPath = typeName + ".css";
 
-        log("info", "Creating new detail pane for: " + typeName);
+        logger.log("info", "Creating new detail pane for: " + typeName);
         if (scriptPath) {
             var js = document.createElement("script");
             js.type = "text/javascript";
             js.src = "TypeSupport/" + scriptPath + this.cacheBust();
-            log("info", "DetailPane loaded script: " + JSON.stringify(js.src));
+            logger.log("info", "DetailPane loaded script: " + JSON.stringify(js.src));
             js.onload = callBack;
             document.body.appendChild(js);
         } else {
-            log("info", "Could not find a detail pane script for type: " + typeName);
+            logger.log("info", "Could not find a detail pane script for type: " + typeName);
         }
         if (cssPath) {
             var css = document.createElement("link");
             css.setAttribute("rel", "stylesheet");
             css.setAttribute("href", "TypeSupport/" + cssPath + this.cacheBust());
             document.head.appendChild(css);
-            log("info", "DetailPane loaded css: " + JSON.stringify(css.getAttribute("href")));
+            logger.log("info", "DetailPane loaded css: " + JSON.stringify(css.getAttribute("href")));
         } else {
-            log("info", "Could not find a detail pane stylesheet for type: " + typeName);
+            logger.log("info", "Could not find a detail pane stylesheet for type: " + typeName);
         }
     },
     getIconForType:function(typename) {

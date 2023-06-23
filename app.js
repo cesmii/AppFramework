@@ -5,23 +5,24 @@ var updateRate = 6000;
 var currentBearerToken = "";
 var currentDetailPane = null;
 var configFavorites = null;
-var logLevel = logLevels.error;
+var logLevel = logger.logLevels.error;
 
 function activate() {
     loadConfig();
 
-    document.title = config.title;
-    document.getElementById("machineName").innerHTML = config.title;
-    document.getElementById("imgLogo").src = config.logo;
-    if (config.style && config.style != "") {
+    document.title = config.app.title;
+    document.getElementById("machineName").innerHTML = config.app.title;
+    document.getElementById("imgLogo").src = config.app.logo;
+    if (config.app.style && config.app.style != "") {
         var css = document.createElement("link");
         css.setAttribute("rel", "stylesheet");
-        css.setAttribute("href", config.style + typeSupport.cacheBust());
+        css.setAttribute("href", config.app.style + typeSupport.cacheBust());
         document.head.appendChild(css);    
     }
-    typeSupport.loadDetailPaneForType(config.machineType, detailPaneReady);
-    if (config.debug) {
-        log("info", "Activating app in Debug mode!");
+    typeSupport.loadDetailPaneForType(config.app.machineType, detailPaneReady);
+    logger.logLevel = logger.logLevels[config.app.logLevel];
+    if (config.app.logLevel == "info") {
+        logger.log("info", "Activating app with verbose logging.");
     }
 }
 
@@ -32,12 +33,12 @@ function detailPaneReady() {
 
 function loadMachines() {
     document.getElementById("btnRefresh").innerHTML = "<img src=\"spinner.gif\" height=\"22px\">";
-    if (config.smipUrl)
-        sendSmipQuery(queries.getEquipments(config.machineType, config.machineParentId), showMachines);
+    if (config.user.smipUrl)
+        sendSmipQuery(queries.getEquipments(config.app.machineType, config.app.modelParentId), showMachines);
     else {
         showMachines();
         document.getElementById("btnRefresh").innerHTML = "Refresh";
-        if (config.machineType != "example") {
+        if (config.app.machineType != "example") {
             toggleElement("settings", "block");
             stopUpdate();
         }
@@ -48,23 +49,23 @@ async function sendSmipQuery(theQuery, callBack) {
     if (!currentBearerToken) {
         currentBearerToken = await smip.getBearerToken();
     }
-    if (config.debug) {
+    if (config.app.logLevel == "info") {
         //Just let errors happen in debug mode
-        callBack(await smip.performGraphQLRequest(theQuery, config.smipUrl, currentBearerToken), theQuery, this);
+        callBack(await smip.performGraphQLRequest(theQuery, config.user.smipUrl, currentBearerToken), theQuery, this);
     } else {
         //Try to show some UI for errors if not in debug mode
         try {
-            callBack(await smip.performGraphQLRequest(theQuery, config.smipUrl, currentBearerToken), theQuery, this);
+            callBack(await smip.performGraphQLRequest(theQuery, config.user.smipUrl, currentBearerToken), theQuery, this);
         }
         catch (ex) {
             if (ex == 400 || ex == 401 || ex == 403) {
-                log("info", "Attempting bearer token refresh with SMIP.");
+                logger.log("info", "Attempting bearer token refresh with SMIP.");
                 try {
                     currentBearerToken = await smip.getBearerToken();
-                    callBack(await smip.performGraphQLRequest(theQuery, config.smipUrl, currentBearerToken), theQuery, this);                        
+                    callBack(await smip.performGraphQLRequest(theQuery, config.user.smipUrl, currentBearerToken), theQuery, this);                        
                 }
                 catch (ex) {
-                    log("error", "Authentication or bearer token refresh failure: " + JSON.stringify(ex));
+                    logger.log("error", "Authentication or bearer token refresh failure: " + JSON.stringify(ex));
                     showToast("Error!", "Attempts to authenticate with the SMIP using configured credentials have failed. Check your settings and re-try.");
                     stopUpdate();
                     document.getElementById("btnRefresh").innerHTML = "Refresh";
@@ -72,12 +73,11 @@ async function sendSmipQuery(theQuery, callBack) {
             } else {
                 errorRetries++;
                 if (ex == 502) {
-                    log("info", "Proxy error - 502: " + ex);
+                    logger.log("warn", "Proxy error - 502: " + ex);
                 } else {
-                    log("info", "Caught an error: " + ex);
-                    log("info", ex.message);
-                    if (config.debug)
-                        log("info", ex.stack);
+                    logger.log("warn", "Caught an error: " + ex);
+                    logger.log("warn", ex.message);
+                    logger.log("info", ex.stack);
                 }
             }
             if (errorRetries > 3) {
@@ -110,7 +110,7 @@ function showMachines(payload, query, self) {
         //Delete widgets if equipment removed
         document.getElementById("machines").childNodes.forEach (function(item) {
             if (discoveredMachines.indexOf(item.id) == -1) {
-                log("info", item.id + " was no longer found and is being removed");
+                logger.log("info", item.id + " was no longer found and is being removed");
                 document.getElementById("machines").removeChild(item);
                 //TODO: If the deleted one was selected, we need to clean-up the details pane too
             }
@@ -120,7 +120,7 @@ function showMachines(payload, query, self) {
             currentDetailPane.update();
     } else {
         //handle example case
-        if (config.machineType == "example") {
+        if (config.app.machineType == "example") {
             if (!this.exampleDone) {
                 //Create the widget
                 newMachine1 = new widgetFactory("example1", {"displayName": "Example #1", "typeName": "example", "id":"0001"}, null, typeSupport.getIconForType("example"), machineClicked);
@@ -132,7 +132,7 @@ function showMachines(payload, query, self) {
             if (currentDetailPane)
                 currentDetailPane.update();
         } else {
-            log("info", "Empty payload for equipments query. Nothing to populate.");
+            logger.log("info", "Empty payload for equipments query. Nothing to populate.");
             showToast("Warning!", "No compatible machine instances found on the SMIP instance. Please add equipment instances that match the SM Profile dependency.");    
         }
     }
@@ -144,7 +144,7 @@ function machineClicked(event) {
     var widget = event.target || event.srcElement;
     widget = widget.widget;
     widget.select(document.getElementById("machines"));
-    log("info", "Rendering details for " + JSON.stringify(widget));
+    logger.log("info", "Rendering details for " + JSON.stringify(widget));
     document.getElementById("machineName").innerHTML = widget.displayName;
     if (currentDetailPane != null) {
         currentDetailPane.destroy();
@@ -213,15 +213,12 @@ function reflectFavorite() {
 async function loadConfig() {
     var cookieConfig = getCookie("config");
     if (cookieConfig) {
-        config = cookieConfig;
+        config.user = cookieConfig;
     }
     configFavorites = getCookie("favorites");
     if (!configFavorites)
         configFavorites = [];
     updateConfigForm();
-
-    if (config.debug)
-        logLevel = logLevels.info;
 }
 
 function updateConfigForm() {
@@ -240,40 +237,40 @@ function updateConfigForm() {
             var opt = document.createElement("option");
             opt.value = f;
             opt.innerText = configFavorites[f].smipUrl.replace("https://", "").replace("/graphql", "");
-            if (configFavorites[f].smipUrl == config.smipUrl) {
+            if (configFavorites[f].smipUrl == config.user.smipUrl) {
                 opt.selected = true;
             }
             form.smipfavorite.appendChild(opt);
             foundFavorite = true;
         }
     }
-    form.smipurl.value = config.smipUrl;
-    form.authenticator.value = config.authenticator;
-    form.smipusername.value = config.username;
-    form.password.value = config.password;
-    form.role.value = config.role; 
-    form.machineParentId.value = config.machineParentId;
+    form.smipurl.value = config.user.smipUrl;
+    form.authenticator.value = config.user.authenticator;
+    form.smipusername.value = config.user.username;
+    form.password.value = config.user.password;
+    form.role.value = config.user.role; 
+    form.modelParentId.value = config.user.modelParentId;
 }
 
 function saveConfig() {
-    log("info", "Saving Config");
+    logger.log("info", "Saving Config");
 
     var form = document.getElementById("configForm").elements;
-    config.smipUrl = form.smipurl.value;
-    config.authenticator = form.authenticator.value;
-    config.username = form.smipusername.value;
-    config.password =  form.password.value;
-    config.role = form.role.value;
-    if (form.machineParentId != "")
-        config.machineParentId = form.machineParentId.value;
+    config.user.smipUrl = form.smipurl.value;
+    config.user.authenticator = form.authenticator.value;
+    config.user.username = form.smipusername.value;
+    config.user.password =  form.password.value;
+    config.user.role = form.role.value;
+    if (form.modelParentId != "")
+        config.user.modelParentId = form.modelParentId.value;
     else
-        config.machineParentId = null;
+        config.user.modelParentId = null;
     
     if (form.saveFavorite.checked) {
         //overwrite, but don't duplicate similar favorites
         var foundFavorite = false;
         for (var f=0;f<configFavorites.length;f++) {
-            if (configFavorites[f].smipUrl == config.smipUrl) {
+            if (configFavorites[f].smipUrl == config.user.smipUrl) {
                 configFavorites[f] = config;
                 foundFavorite = true;
             }
@@ -286,10 +283,8 @@ function saveConfig() {
     
     toggleElement("toast", "none");
     toggleElement("settings", "none");
-    setCookie("config", config, 90);
-
-    if (config.debug)
-        log("info", "Config now: " + JSON.stringify(config));
+    setCookie("config", config.user, 90);
+    logger.log("info", "User config now: " + JSON.stringify(config.user));
 
     //Clear Machines
     stopUpdate();
@@ -313,8 +308,7 @@ function setCookie(name, value, duration) {
     var d = new Date();
     d.setTime(d.getTime() + (duration*24*60*60*1000));
     duration = d.toUTCString();
-    if (config.debug)
-        log("info", "Saving cookie: " + name + ", value: " + JSON.stringify(value));
+    logger.log("info", "Saving cookie: " + name + ", value: " + JSON.stringify(value));
     var cookie = [name, "=", JSON.stringify(value), "; expires=" + duration + "; domain=.", window.location.host.toString(), "; SameSite=Strict; path=/;"].join("");
     document.cookie = cookie;
 }
@@ -322,18 +316,17 @@ function setCookie(name, value, duration) {
 function getCookie(name) {
     var value = document.cookie.match(new RegExp(name + '=([^;]+)'));
     value && (value = JSON.parse(value[1]));
-    if (config.debug)
-        log("info", "Got cookie: " + name + ", value: " + JSON.stringify(value));
+    logger.log("info", "Got cookie: " + name + ", value: " + JSON.stringify(value));
     return value;
 }
 
 function updateLoop() {
-    if (!config.debug) {
+    if (config.app.logLevel != "info") {
         updateTimer = setInterval(function () { 
             loadMachines();
         }, updateRate);
     } else {
-        log("info", "Debug mode is on, update firing once -- loop disabled!");
+        logger.log("info", "Verbose logging is on, update firing once -- loop disabled!");
         loadMachines();
     }
 }

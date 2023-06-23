@@ -9,39 +9,19 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" integrity="sha512-ElRFoEQdI5Ht6kZvyzXhYG9NqjtkmlkfYk0wr6wHxU9JEHakS7UJZNeml5ALk+8IKlU6jDgMabC3vkumRokgJA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="gauge.js"></script>
         <script type="text/javascript" src="TypeSupport/typeSupport.js"></script>
+        <script defer type="text/javascript" src="logger.js"></script>
         <script defer type="text/javascript" src="defaults.js"></script>
         <script defer type="text/javascript" src="config.js"></script>
         <script defer type="text/javascript" src="smip.js"></script>
         <script defer type="text/javascript" src="smip-queries.js"></script>
         <script defer type="text/javascript" src="widgets.js"></script>
         <script defer type="text/javascript" src="app.js"></script>
-        <script>
-            const logLevels = {
-                "error": 3,
-                "warn": 2,
-                "info": 1
-            };
-            function log() {
-                var messageLevel = "info";
-                var messageText = "";
-                for (let i = 0; i < arguments.length; i++) {
-                    let argument = arguments[i];
-                    if (argument.toLowerCase() == "info" || argument.toLowerCase() == "warn" || argument.toLowerCase() == "error")
-                        messageLevel = argument;
-                    else
-                        messageText += argument + " ";
-                };
-                if (logLevels[messageLevel] >= logLevel) {
-                    console.log(messageLevel + ": " + messageText);
-                }
-            }
-        </script>
     </head>
     <body onload="activate()">
         <!-- title bars -->
         <div class="titles">
             <div class="toptitle">
-                <img id="imgLogo" src="cesmii.png" style="height:40px" onerror="null;this.src='cesmii.png';log('warn', 'Failed to load custom logo, reverting to defatult!')">
+                <img id="imgLogo" src="cesmii.png" style="height:40px" onerror="null;this.src='cesmii.png';logger.log('warn', 'Failed to load custom logo, reverting to defatult!')">
                 <button onclick="loadMachines()" id="btnRefresh" style="float:right; width:100px;height:44px;">Refresh</button>
                 <button onclick="toggleElement('settings')" id="btnConfig" style="float:right; width:100px;height:44px;margin-right:14px;">Settings</button>
             </div>
@@ -92,8 +72,8 @@
                 <label for="role">Role</label><br>
                 <input type="text" id="role" name="role" required><br>
 
-                <label for="machineParentId">Parent ID</label><br>
-                <input type="text" id="machineParentId" name="machineParentId"><br>
+                <label for="modelParentId">Parent ID</label><br>
+                <input type="text" id="modelParentId" name="modelParentId"><br>
 
                 <input type="checkbox" id="saveFavorite" name="saveFavorite">
                 <label for="saveFavorite">Save as Favorite</label><br>
