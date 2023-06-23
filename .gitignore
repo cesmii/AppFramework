@@ -1,6 +1,8 @@
 config.js
 custom.css
 logo.png
+manifest.json
+browserconfig.xml
 TypeSupport/*
 !TypeSupport/example.css
 !TypeSupport/example.js
