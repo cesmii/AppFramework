@@ -27,10 +27,8 @@ const typeSupport = {
         }
     },
     getIconForType:function(typename) {
-        this.getMyPath();
-        var typeicon = "example.png";
-        var typename = typename.toLowerCase() + "png";
-        return this.getMyPath() + typeicon;
+        var typename = typename.toLowerCase() + ".png";
+        return this.getMyPath() + typename;
     },
     getMyPath:function() {
         return "TypeSupport/";
