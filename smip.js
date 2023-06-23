@@ -22,36 +22,45 @@ smip.performGraphQLRequest = async function performGraphQLRequest(query, endPoin
 }
 
 smip.getBearerToken = async function getBearerToken() {
-    return new Promise(
-        async function (resolve, reject) {
-            // Step 1: Request a challenge
-            var theQuery = {
-                query: `mutation { authenticationRequest(input:
-                    {authenticator: "${config.authenticator}", 
-                    role: "${config.role}", 
-                    userName: "${config.name}"})
-                    { jwtRequest { challenge, message } } 
-                }`
-            };
-            var authResponse = await smip.performGraphQLRequest(theQuery, config.smipUrl);
-            var challenge = authResponse.data.authenticationRequest.jwtRequest.challenge;
-
-            // Step 2: Get token
-            var theQuery = {
-                query: `mutation { authenticationValidation(input:
-                    {authenticator:"${config.authenticator}", 
-                    signedChallenge: "${challenge}|${config.password}"})
-                    { jwtClaim } 
-                }`
-            };
-            var challengeResponse = await smip.performGraphQLRequest(theQuery, config.smipUrl);
-            var newJwtToken = "Bearer " + challengeResponse.data.authenticationValidation.jwtClaim;
-            console.log("Successfully authenticated with SMIP");
-            resolve(newJwtToken);
-
-            //TODO: Handle errors!
+    if (config.authenticator && config.authenticator != "" &&
+        config.username && config.username != "" &&
+        config.password && config.password != "" &&
+        config.role && config.role != "") {
+            return new Promise(
+                async function (resolve, reject) {
+                    // Step 1: Request a challenge
+                    var theQuery = {
+                        query: `mutation { authenticationRequest(input:
+                            {authenticator: "${config.authenticator}", 
+                            role: "${config.role}", 
+                            userName: "${config.username}"})
+                            { jwtRequest { challenge, message } } 
+                        }`
+                    };
+                    var authResponse = await smip.performGraphQLRequest(theQuery, config.smipUrl);
+                    var challenge = authResponse.data.authenticationRequest.jwtRequest.challenge;
+        
+                    // Step 2: Get token
+                    var theQuery = {
+                        query: `mutation { authenticationValidation(input:
+                            {authenticator:"${config.authenticator}", 
+                            signedChallenge: "${challenge}|${config.password}"})
+                            { jwtClaim } 
+                        }`
+                    };
+                    var challengeResponse = await smip.performGraphQLRequest(theQuery, config.smipUrl);
+                    var newJwtToken = "Bearer " + challengeResponse.data.authenticationValidation.jwtClaim;
+                    console.log("Successfully authenticated with SMIP");
+                    resolve(newJwtToken);
+        
+                    //TODO: Handle errors!
+                }
+            );
         }
-    );
+    else {
+        console.log("Insufficient credentials configured for SMIP authentication. Check config.");
+        return false;
+    }
 }
 
 /* This function probably isn't necessary, as long as we make sure the query includes ids in the response */

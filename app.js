@@ -57,9 +57,17 @@ async function sendSmipQuery(theQuery, callBack) {
         }
         catch (ex) {
             if (ex == 400 || ex == 401 || ex == 403) {
-                console.log("perhaps the bearer token has expired, let's get a new one");
-                currentBearerToken = await smip.getBearerToken();
-                callBack(await smip.performGraphQLRequest(theQuery, config.smipUrl, currentBearerToken), theQuery, this);
+                console.log("Attempting bearer token refresh with SMIP.");
+                try {
+                    currentBearerToken = await smip.getBearerToken();
+                    callBack(await smip.performGraphQLRequest(theQuery, config.smipUrl, currentBearerToken), theQuery, this);                        
+                }
+                catch (ex) {
+                    console.log("Authentication or bearer token refresh failure: " + JSON.stringify(ex));
+                    showToast("Error!", "Attempts to authenticate with the SMIP using configured credentials have failed. Check your settings and re-try.");
+                    stopUpdate();
+                    document.getElementById("btnRefresh").innerHTML = "Refresh";
+                }
             } else {
                 errorRetries++;
                 if (ex == 502) {
@@ -272,6 +280,7 @@ function saveConfig() {
         setCookie("favorites", configFavorites, 90);
     }
     
+    toggleElement("toast", "none");
     toggleElement("settings", "none");
     setCookie("config", config, 90);
 
