@@ -50,7 +50,7 @@ smip.getBearerToken = async function getBearerToken() {
                     };
                     var challengeResponse = await smip.performGraphQLRequest(theQuery, config.smipUrl);
                     var newJwtToken = "Bearer " + challengeResponse.data.authenticationValidation.jwtClaim;
-                    console.log("Successfully authenticated with SMIP");
+                    log("info", "Successfully authenticated with SMIP");
                     resolve(newJwtToken);
         
                     //TODO: Handle errors!
@@ -58,7 +58,7 @@ smip.getBearerToken = async function getBearerToken() {
             );
         }
     else {
-        console.log("Insufficient credentials configured for SMIP authentication. Check config.");
+        log("info", "Insufficient credentials configured for SMIP authentication. Check config.");
         return false;
     }
 }
@@ -79,7 +79,7 @@ smip.parseGraphQLForQueryParams = function(queryType, queryBody) {
         queryParams = JSON.parse(queryParams);
         return queryParams;
     } catch(error) {
-        console.log(error, "Could not parse query params to JSON: " + queryParts[0]);
+        log("info", error, "Could not parse query params to JSON: " + queryParts[0]);
         return false;
     }
 };
