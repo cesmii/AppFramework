@@ -311,7 +311,7 @@ function setCookie(name, value, duration) {
     d.setTime(d.getTime() + (duration*24*60*60*1000));
     duration = d.toUTCString();
     logger.log("info", "Saving cookie: " + name + ", value: " + JSON.stringify(value));
-    var cookie = [name, "=", JSON.stringify(value), "; expires=" + duration + "; domain=.", window.location.host.toString(), "; SameSite=Strict; path=/;"].join("");
+    var cookie = [name, "=", JSON.stringify(value), "; expires=" + duration + "; SameSite=Strict; path=/;"].join("");
     document.cookie = cookie;
 }
 
