@@ -4,30 +4,37 @@
  "start_url": "index.html",
  "description": "CESMII's AppFramework provides a simple environment for creating SMProfile-based web apps. Learn more at github.com/cesmii/AppFramework.",
  "display": "standalone",
+ "background_color": "white",
  "icons": [
   {
    "src": "icons\/android-icon-36x36.png",
-   "sizes": "36x36"
+   "sizes": "36x36",
+   "purpose": "maskable"
   },
   {
    "src": "icons\/android-icon-48x48.png",
-   "sizes": "48x48"
+   "sizes": "48x48",
+   "purpose": "maskable"
   },
   {
    "src": "icons\/android-icon-72x72.png",
-   "sizes": "72x72"
+   "sizes": "72x72",
+   "purpose": "maskable"
   },
   {
    "src": "icons\/android-icon-96x96.png",
-   "sizes": "96x96"
+   "sizes": "96x96",
+   "purpose": "maskable"
   },
   {
    "src": "icons\/android-icon-144x144.png",
-   "sizes": "144x144"
+   "sizes": "144x144",
+   "purpose": "maskable"
   },
   {
    "src": "icons\/android-icon-192x192.png",
-   "sizes": "192x192"
+   "sizes": "192x192",
+   "purpose": "maskable"
   }
  ]
 }
