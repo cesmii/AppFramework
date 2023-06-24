@@ -27,7 +27,7 @@ Most PCs and smart phones can also "install" this website as a PWA (Progressive 
 
 This framework is evolving, you will want to periodically `git pull` for new changes.
 
-CESMII provides no guarantee that changes won't break extensions in the future. A [changelog](changelog) will be published in this README.
+CESMII provides no guarantee that changes won't break extensions in the future. A [changelog](#changelog) will be published in this README.
 
 ## Customization
 
