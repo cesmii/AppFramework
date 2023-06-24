@@ -25,7 +25,9 @@ Most PCs and smart phones can also "install" this website as a PWA (Progressive 
 
 ## Updates
 
-This framework is evolving, you will want to periodically `git pull` for new changes. There's no guarantee that changes won't break extension in the future.
+This framework is evolving, you will want to periodically `git pull` for new changes.
+
+CESMII provides no guarantee that changes won't break extensions in the future. A [#changelog](change-log) will be published in this README.
 
 ## Customization
 
@@ -46,3 +48,7 @@ You can make the framework have a unique identity without breaking the ability t
 
 - [ChartsJS](https://github.com/chartjs/Chart.js), used under a MIT license.
 - [GauageJS](https://bernii.github.io/gauge.js), used under a MIT license.
+
+## Changelog
+
+- 6/23/2023 - Initial availability
