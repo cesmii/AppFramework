@@ -23,12 +23,12 @@ You can make the framework have a unique identity without breaking the ability t
 
 - Modify the PWA through the manifest and `icons/` folder. Once you change these, you can tell git to ignore those changes:
 
-`git update-index --assume-unchanged manifest.json`
+    `git update-index --assume-unchanged manifest.json`
 
-Repeat for each icon you change.
-If you want to revert back to the CESMII defaults:
+    Repeat for each icon you change.
+    If you want to revert back to the CESMII defaults:
 
-`git update-index --no-assume-unchanged manifest.json`
+    `git update-index --no-assume-unchanged manifest.json`
 
 ## Credits
 
