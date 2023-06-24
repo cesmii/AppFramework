@@ -11,6 +11,18 @@ SymLinking is supported (if your host supports it)
 
 [AppFrameworkExtensions](https://github.com/cesmii/AppFrameworkExtensions)
 
+## Installation
+
+### Server-side
+
+This framework is pure Javascript, so any web server can host it, there are no special requirements.
+
+### Client-side
+
+Any modern web browser should be able to render the framework -- its up to extension developers to ensure that remains true.
+
+Most PCs and smart phones can also "install" this website as a PWA (Progressive Web App). Look for the "Install" or "Add to Home Screen" options in your OS.
+
 ## Updates
 
 This framework is evolving, you will want to periodically `git pull` for new changes. There's no guarantee that changes won't break extension in the future.
