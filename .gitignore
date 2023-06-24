@@ -2,7 +2,7 @@ config.js
 custom.css
 logo.png
 manifest.json
-/icons
+/icons/
 TypeSupport/*
 !TypeSupport/example.css
 !TypeSupport/example.js
