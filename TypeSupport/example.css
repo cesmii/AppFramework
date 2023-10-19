@@ -8,3 +8,11 @@
     font-size: x-large;
     color:black;
 }
+
+.button.close-button {
+    float: right;
+}
+
+.hide {
+    display: none;
+}

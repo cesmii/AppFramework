@@ -31,11 +31,24 @@ function activate() {
 }
 
 function detailPaneReady() {
-    loadMachines();
-    updateLoop();
+    // loadMachines();
+    // updateLoop();
+    getNewSensors();
+}
+
+function getNewSensors(){ 
+
+    let newScanner001 = new widgetFactory("newScanner001", {"displayName": "New Scanner", "typeName": "example", "id":"0003"}, null, typeSupport.getIconForType("example"), machineClicked);
+    document.getElementById("machines").appendChild(newScanner001.build(newScanner001));
+    this.exampleDone = true;
+
+    if (currentDetailPane) {
+        currentDetailPane.update();
+    }    
 }
 
 function loadMachines() {
+    console.log('loadmachines running')
     document.getElementById("btnRefresh").innerHTML = "<img src=\"spinner.gif\" height=\"22px\">";
     if (config.user.smipUrl && config.user.smipUrl != "" &&
         config.user.authenticator && config.user.authenticator !== "" &&
@@ -51,10 +64,12 @@ function loadMachines() {
             stopUpdate();
         } else {    //handle example case
             if (!this.exampleDone) {
-                newMachine1 = new widgetFactory("example1", {"displayName": "Example #1", "typeName": "example", "id":"0001"}, null, typeSupport.getIconForType("example"), machineClicked);
-                document.getElementById("machines").appendChild(newMachine1.build(newMachine1));
-                newMachine2 = new widgetFactory("example2", {"displayName": "Example #2", "typeName": "example", "id":"0002"}, null, typeSupport.getIconForType("example"), machineClicked);
-                document.getElementById("machines").appendChild(newMachine2.build(newMachine2));
+                // newMachine1 = new widgetFactory("example1", {"displayName": "Example #1", "typeName": "example", "id":"0001"}, null, typeSupport.getIconForType("example"), machineClicked);
+                // document.getElementById("machines").appendChild(newMachine1.build(newMachine1));
+                // newMachine2 = new widgetFactory("example2", {"displayName": "Example #2", "typeName": "example", "id":"0002"}, null, typeSupport.getIconForType("example"), machineClicked);
+                // document.getElementById("machines").appendChild(newMachine2.build(newMachine2));
+                newScanner001 = new widgetFactory("newScanner001", {"displayName": "New Scanner", "typeName": "example", "id":"0003"}, null, typeSupport.getIconForType("example"), machineClicked);
+                document.getElementById("machines").appendChild(newScanner001.build(newScanner001));
                 this.exampleDone = true;
             }
             if (currentDetailPane)
@@ -110,6 +125,8 @@ async function sendSmipQuery(theQuery, callBack) {
 }
 
 function showMachines(payload, query) {
+    console.log('payload:', payload);
+    console.log('query:', query);
     if (payload && payload.data && payload.data.equipments && payload.data.equipments.length != 0) {
         var discoveredMachines = [];
         payload.data.equipments.forEach (function(item, index, arr) {

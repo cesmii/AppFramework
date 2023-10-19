@@ -44,9 +44,16 @@ const queries = {
         //TODO: construct query recursively to depth
         return {
             query: `{
-                equipment(id: "${instanceId}") {
+              equipment(id: "${instanceId}") {
+                id
+                displayName
+                childEquipment {
                   id
                   displayName
+                  attributes {
+                    id
+                    displayName
+                  }
                   childEquipment {
                     id
                     displayName
@@ -58,29 +65,102 @@ const queries = {
                       id
                       displayName
                       attributes {
-                      id
-                      displayName
-                    }
-                            childEquipment {
-                      id
-                      displayName
-                      attributes {
-                      id
-                      displayName
-                    }
-                           childEquipment {
-                      id
-                      displayName
-                      attributes {
-                      id
-                      displayName
-                    }
-                    }
-                    }
+                        id
+                        displayName
+                      }
+                      childEquipment {
+                        id
+                        displayName
+                        attributes {
+                          id
+                          displayName
+                        }
+                      }
                     }
                   }
                 }
-              }`
+              }
+            }`
         };
-    }
+    },
+    // query to find MAC ID's of the sensor's placed in 'new sensor initiation'
+    getPlaceEquipment: function (placeId) {
+      return {
+        query: `{
+          place(id: "${placeId}") {
+            id
+            displayName
+            equipment(first: 10) {
+              id
+              displayName
+              attributes {
+                stringValue
+                displayName
+              }
+            }
+          }}`
+      };
+    },
+    // query to find MAC ID's of the sensor's placed in 'new sensor initiation'
+    getEquipment: function (id) {
+      return {
+        query: `{
+          equipments(filter: { id: { equalTo: "${id}" } }) {
+            displayName
+            typeName
+            id
+          }
+        }`
+      };
+    },
+    // query to get child equipment from a specified place
+    getPlaceChildEquipment: function(placeId) {
+      return {
+        query: `{
+          places(filter: { partOfId: { equalTo: "${placeId}" } }) {
+            id
+            displayName
+            equipment {
+              displayName
+              id
+              attributes {
+                displayName
+                id
+                dataType
+              }
+              childEquipment {
+                displayName
+                typeName
+                id
+                attributes {
+                  displayName
+                  id
+                  dataType
+                }
+              }
+            }
+          }
+        }`
+      }
+    },
 };
+
+const mutations = {
+    // mutation to update equipment parent
+    updateEquipmentParent: function(equipmentId, newPlaceId) {
+      return {
+        query: `mutation {
+          updateEquipment(input: { id: "${equipmentId}", patch: { partOfId: "${newPlaceId}" } }) {
+            place {
+              id
+              displayName
+              parentPlace {
+                id
+                displayName
+              }
+            }
+          }
+        }`
+      }
+    }
+}
