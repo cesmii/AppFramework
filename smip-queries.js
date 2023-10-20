@@ -162,5 +162,5 @@ const mutations = {
           }
         }`
       }
-    }
+    },
 }

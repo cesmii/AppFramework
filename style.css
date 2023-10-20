@@ -38,6 +38,8 @@ h1 {
   position: absolute;
   top: 120px; /* Header Height */
   bottom: 0px; /* Footer Height */
+  display: flex;
+  width: 100%;
 } 
 .logo {
   height: 50px;
@@ -48,19 +50,37 @@ h1 {
   background-color: var(--darkblue);
   padding: 10px 20px;
 }
-
+#layout {
+    display: flex;
+    width: 100%;
+}
+@media screen and (max-width: 640px) {
+  #layout {
+    flex-flow: column;
+  }
+  #details {
+    width: initial !important;
+  }
+  #reader {
+      margin: initial !important;
+      max-width: initial !important;
+  }
+}
 #machines {
   width: var(--navwidth);
-  height: 100%;
-  float:left;
-  border-right: 2px solid dimgray;
-  position: absolute;
 }
 #details {
-  margin-left: var(--navwidth);
+  background: lightgray;
+  border-radius: 4px;
+  margin: 11px;
   padding: 10px;
+  width: 100%;
 }
-
+#reader {
+    margin: auto;
+    border: none !important;
+    max-width: 80%;
+}
 /* Settings popup */
 #settings {
   padding: 18px;

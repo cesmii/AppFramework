@@ -14,10 +14,10 @@ detailPane = {
     ready:true,
     count:0,
     detailPaneHTML:`
-<h2>${config.app.title}</h2>
-<!--<div><input type=text id='scaninput' style='font-size: 24px;margin-top: 11px;width: 500px;' /></div>-->
 <div style=''>
-  <h2 id="instructionScan">${config.app.instructionScanSensor}</h2>
+<!--<div><input type=text id='scaninput' style='font-size: 24px;margin-top: 11px;width: 500px;' /></div>-->
+
+  <h4 id="instructionScan">${config.app.instructionScanSensor}</h4>
   <!--<button class='button open-button' type='submit'>Move to a Machine Area</button>-->
   <div id="sensorScanSuccess"></div>
   <div id="locationScanSuccess"></div>
@@ -25,13 +25,9 @@ detailPane = {
   <div id="selectNewParent"></div>
   <div id="successMessage"></div>
   <button id="new-scan" class='button' type='submit'>Scan Machine QR</button>
+  <button id="reset-sensors" class='button reset-button' type='submit'>Reset Sensors</button>
 </div>
-<div id='reader' style='width: 500px; height: 500px'></div>
-<dialog class='modal' id='modal'>
-  <button class='button close-button'>X</button>
-  <h2>Move the <span data-name="sensorName"></span> to a Machine Area</h2>
-  <ul class="select-new-parent"></ul>
-</dialog>
+<div id='reader' style=''></div>
     `,
 
     /* IDetailPane Interface Methods */
@@ -58,6 +54,12 @@ detailPane = {
         newScanButton.addEventListener("click", () => {
           detailPane.renderQrScanner('machine');
           detailPane.toggleVisibility("new-scan", "hide");
+        });
+
+        let resetSensorsButton = document.getElementById("reset-sensors");
+        resetSensorsButton.addEventListener("click", () => {
+          console.log("clicked reset sensors");
+          detailPane.resetSensors();
         });
 
         // If we are connected to the SMIP, go ahead see what sensors are in the SMIP instance
@@ -118,6 +120,25 @@ detailPane = {
         return this.count;
     },
 
+    resetSensors: function() {
+      let sensorArray = ["82840", "82849"];
+
+        sensorArray.forEach((sensor) => {
+            console.log('sensor: ', sensor);
+            sendSmipQuery(mutations.updateEquipmentParent(sensor, config.app.placeId), detailPane.finishedDemoReset.bind(this));
+        });
+    },
+
+    finishedDemoReset: function(payload, query) {
+      console.log("payload: ", payload);
+      console.log("query: ", query);
+
+      detailPane.toggleVisibility("moveSensorToLocation", "hide");
+      detailPane.toggleVisibility("selectNewParent", "hide");
+      document.getElementById('successMessage').textContent = 
+      `✅ A sensor has successfully been moved back to the ${payload.data.updateEquipment.place.displayName}`;
+    },
+
     finishedMutation: function(payload, query) {
       console.log('inside finishedMutation ####');
       console.log('payload finishedMutation', payload);
@@ -166,14 +187,14 @@ detailPane = {
     getNewParentPlaceEquipment: function(payload, query) {
       console.log('inside getNewParentEquipment ####');
       console.log('payload getNewParentEquipment', payload);
-      const modal = document.querySelector("#modal");
+      // const modal = document.querySelector("#modal");
       // const openModal = document.querySelector(".open-button");
-      const closeModal = document.querySelector(".close-button");
-      let modalList = document.querySelector(".select-new-parent");
+      // const closeModal = document.querySelector(".close-button");
+      // let modalList = document.querySelector(".select-new-parent");
 
-      closeModal.addEventListener("click", () => {
-        modal.close();
-      });
+      // closeModal.addEventListener("click", () => {
+      //   modal.close();
+      // });
 
       let parentPlaceArray = payload.data.places;
 
@@ -233,7 +254,7 @@ detailPane = {
       detailPane.html5QrcodeScanner.clear();
 
       document.getElementById('instructionScan').textContent = config.app.instructionMoveSensor;
-      
+
       let matchedSMIPtoScan = (detailPane.foundParentPlaceEquipment.find((attr) => attr.id === decodedText));
       console.log("matchedSMIPtoScan: ", matchedSMIPtoScan);
       detailPane.locationMatchedToSMIP = matchedSMIPtoScan;
@@ -277,7 +298,7 @@ detailPane = {
       detailPane.sensorMatchedToSMIP = matchedSMIPtoScan;
 
       // sensor scan success message
-      document.querySelector('[data-name="sensorName"]').textContent = matchedSMIPtoScan.displayName;
+      // document.querySelector('[data-name="sensorName"]').textContent = matchedSMIPtoScan.displayName;
       document.getElementById('sensorScanSuccess').textContent = `✅ ${detailPane.sensorMatchedToSMIP.displayName} successfully scanned.`;
       detailPane.toggleVisibility("sensorScanSuccess", "show");
 

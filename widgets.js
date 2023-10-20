@@ -22,8 +22,8 @@ class widgetFactory {
         var widgetIcon = document.createElement("img");
         widgetIcon.src = this.icon;
         widgetIcon.addEventListener("error", this.loadDefaultImage);
-        widgetIcon.height = 64;
-        widgetIcon.width = 64;
+        widgetIcon.height = 32;
+        widgetIcon.width = 32;
         newWidget.appendChild(widgetIcon);
         newWidget.addEventListener("click", this.clickHandler);
         if (this.typeName == this.childType) {

@@ -16,3 +16,11 @@
 .hide {
     display: none;
 }
+
+.button.reset-button {
+    bottom: 11px;
+    position: fixed;
+    right: 11px;
+    font-size: 9px;
+    padding: 5px 10px;
+}

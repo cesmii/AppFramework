@@ -4,7 +4,7 @@
   z-index: -1;
 }
 .widget img { 
-  width: 64px; height:64px;
+/*  width: 64px; height:64px;*/
   pointer-events: none;
 }
 .widget p {
@@ -14,27 +14,29 @@
   clear: both;
   pointer-events: none;
 }
+.widget.machine {
+  display: flex;
+  align-items: center;
+  flex-direction: row-reverse;
+}
 .machine {
   color: black;
   background-color: lightgray;
-  border-radius: 20px;
-  border: 1px solid black;
+  border-radius: 4px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+  opacity: .85;
   display: inline-block;
-  padding: 20px;
-  margin: 15px;
+  padding: 10px 20px;
+  margin: 11px;
   min-width: 130px;
   text-align: center;
   text-transform: uppercase;
-  -webkit-box-shadow: rgb(0 0 0 / 30%) 0 1px 10px;
-  -moz-box-shadow: rgba(0,0,0,0.3) 0 1px 10px;
-  box-shadow: rgb(0 0 0 / 30%) 0 1px 10px;
 }
 .machine:hover {
   background-color:var(--blue);
 }
 .machine.selected {
-  background-color: var(--darkblue);
-  color:white;
+  color: white;
 }
 .machine.updating {
   animation: fadeInFromNone 0.5s ease-out;
