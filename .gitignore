@@ -1,9 +1,3 @@
 config.js
 custom.css
 logo.png
-TypeSupport/*
-!TypeSupport/example.css
-!TypeSupport/example.js
-!TypeSupport/example.png
-!TypeSupport/readme.md
-!TypeSupport/typeSupport.js

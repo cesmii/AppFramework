@@ -1,0 +1,9 @@
+#reader {
+    margin: auto;
+    border: none !important;
+    max-width: 80%;
+}
+.reader-div {
+    font-size: x-large;
+    color:black;
+}
