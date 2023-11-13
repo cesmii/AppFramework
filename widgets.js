@@ -50,7 +50,7 @@ class widgetFactory {
     };
 
     loadDefaultImage() {
-        logger.log("info", "Widget icon could not be found for specified type. Substituting default image.");
+        logger.log(info, "Widget icon could not be found for specified type. Substituting default image.");
         this.src='unknown.png';
     };
 

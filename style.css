@@ -38,6 +38,8 @@ h1 {
   position: absolute;
   top: 120px; /* Header Height */
   bottom: 0px; /* Footer Height */
+  display: flex;
+  width: 100%;
 } 
 .logo {
   height: 50px;
@@ -48,17 +50,20 @@ h1 {
   background-color: var(--darkblue);
   padding: 10px 20px;
 }
+#layout {
+  display: flex;
+  width: 100%;
+}
 #machines {
   display:block;
   width: var(--navwidth);
-  height: 100%;
-  float:left;
-  border-right: 2px solid dimgray;
-  position: absolute;
 }
 #details {
-  margin-left: var(--navwidth);
+  background: lightgray;
+  border-radius: 4px;
+  margin: 11px;
   padding: 10px;
+  width: 100%;
 }
 @media screen and (max-width: 640px) {
   #layout {
@@ -78,12 +83,9 @@ h1 {
     border: 1px solid blue;
   }
   #machines {
-    off-width: 0px;
-    off-border-right: 0px;
     display:none;
-
     padding: 18px;
-    background-color:lightgray;
+    background-color:white;
     border:1px solid rgb(99, 99, 99);
     color:black;
     border-radius: 8px;
@@ -92,17 +94,12 @@ h1 {
     left: 120px;
     z-index: 1; 
     width: 205px;
-    off-width: 230; 
     height: 340px;
     overflow-x: none;
     overflow-y: auto;
     -webkit-box-shadow: rgb(0 0 0 / 30%) 0 1px 10px;
     -moz-box-shadow: rgba(0,0,0,0.3) 0 1px 10px;
     box-shadow: rgb(0 0 0 / 30%) 0 1px 10px;
-  }
-  #reader {
-    margin: initial !important;
-    max-width: initial !important;
   }
 }
 /* Settings popup */

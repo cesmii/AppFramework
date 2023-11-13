@@ -1,4 +1,5 @@
-smip = {};
+if (typeof smip === 'undefined')
+    smip = {};
 smip.currentBearerToken = "";
 
 smip.performGraphQLRequest = async function performGraphQLRequest(query, endPoint, bearerToken) {
@@ -22,7 +23,7 @@ smip.performGraphQLRequest = async function performGraphQLRequest(query, endPoin
 }
 
 smip.getBearerToken = async function getBearerToken() {
-    logger.log("info", "getBearerToken invoked!");
+    logger.log(info, "getBearerToken invoked!");
     if (config.user.authenticator && config.user.authenticator != "" &&
         config.user.username && config.user.username != "" &&
         config.user.password && config.user.password != "" &&
@@ -51,7 +52,7 @@ smip.getBearerToken = async function getBearerToken() {
                     };
                     var challengeResponse = await smip.performGraphQLRequest(theQuery, config.user.smipUrl);
                     var newJwtToken = "Bearer " + challengeResponse.data.authenticationValidation.jwtClaim;
-                    logger.log("info", "Successfully authenticated with SMIP");
+                    logger.log(info, "Successfully authenticated with SMIP");
                     resolve(newJwtToken);
         
                     //TODO: Handle errors!
@@ -59,7 +60,7 @@ smip.getBearerToken = async function getBearerToken() {
             );
         }
     else {
-        logger.log("info", "Insufficient credentials configured for SMIP authentication. Check config.");
+        logger.log(info, "Insufficient credentials configured for SMIP authentication. Check config.");
         return false;
     }
 }
@@ -80,7 +81,7 @@ smip.parseGraphQLForQueryParams = function(queryType, queryBody) {
         queryParams = JSON.parse(queryParams);
         return queryParams;
     } catch(error) {
-        logger.log("info", error, "Could not parse query params to JSON: " + queryParts[0]);
+        logger.log(info, error, "Could not parse query params to JSON: " + queryParts[0]);
         return false;
     }
 };

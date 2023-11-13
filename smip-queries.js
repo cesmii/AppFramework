@@ -1,4 +1,6 @@
-const queries = {
+if (typeof smip === 'undefined')
+    smip = {};
+smip.queries = {
     getHistoricalData: function(attrId, starttime, endtime, datatype) {
       return {
         query: `{
@@ -82,5 +84,65 @@ const queries = {
                 }
               }`
         };
-    }
+    },
+    // query to find details of a piece of equipment give its id
+    getEquipmentById: function (id) {
+      return {
+        query: `{
+          equipments(filter: { id: { equalTo: "${id}" } }) {
+            displayName
+            typeName
+            id
+          }
+        }`
+      };
+    },
+    // query to find details of a piece of equipment from a specified place
+    getEquipmentsInPlace: function (placeId, limit=10) {
+      return {
+        query: `{
+          place(id: "${placeId}") {
+            id
+            displayName
+            equipment(first: ${limit}) {
+              id
+              displayName
+              attributes {
+                stringValue
+                displayName
+              }
+            }
+          }}`
+      };
+    },
+    // query to get child equipment from a specified place
+    getChildEquipmentsInPlace: function(placeId) {
+      return {
+        query: `{
+          places(filter: { partOfId: { equalTo: "${placeId}" } }) {
+            id
+            displayName
+            equipment {
+              displayName
+              id
+              attributes {
+                displayName
+                id
+                dataType
+              }
+              childEquipment {
+                displayName
+                typeName
+                id
+                attributes {
+                  displayName
+                  id
+                  dataType
+                }
+              }
+            }
+          }
+        }`
+      }
+    },
 };

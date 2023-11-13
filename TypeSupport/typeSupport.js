@@ -10,31 +10,31 @@ const typeSupport = {
     //Called by the main page code when a detail pane is needed
     //  Tries to the appropriate detailpane resources for a given type and loads them into the DOM
     loadDetailPaneForType: function(typeName, callBack) {
-        logger.log("info", "Creating new detail pane for: " + typeName);
+        logger.log(info, "Creating new detail pane for: " + typeName);
         //Load script
         var scriptPath = this.getResourcePath(typeName, "script");
-        logger.log("info", "Loading resource: " + scriptPath);
+        logger.log(info, "Loading resource: " + scriptPath);
         if (scriptPath) {
             var js = document.createElement("script");
             js.type = "text/javascript";
             js.src = scriptPath + this.cacheBust();
-            logger.log("info", "DetailPane loaded script: " + JSON.stringify(js.src));
+            logger.log(info, "DetailPane loaded script: " + JSON.stringify(js.src));
             js.onload = callBack;
             document.body.appendChild(js);
         } else {
-            logger.log("info", "Could not find a detail pane script for type: " + typeName);
+            logger.log(info, "Could not find a detail pane script for type: " + typeName);
         }
         //Load css
         var cssPath = this.getResourcePath(typeName, "style");
-        logger.log("info", "Loading resource: " + cssPath);
+        logger.log(info, "Loading resource: " + cssPath);
         if (cssPath) {
             var css = document.createElement("link");
             css.setAttribute("rel", "stylesheet");
             css.setAttribute("href", cssPath + this.cacheBust());
             document.head.appendChild(css);
-            logger.log("info", "DetailPane loaded css: " + JSON.stringify(css.getAttribute("href")));
+            logger.log(info, "DetailPane loaded css: " + JSON.stringify(css.getAttribute("href")));
         } else {
-            logger.log("info", "Could not find a detail pane stylesheet for type: " + typeName);
+            logger.log(info, "Could not find a detail pane stylesheet for type: " + typeName);
         }
         return true;
     },

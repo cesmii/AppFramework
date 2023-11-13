@@ -12,8 +12,8 @@ var typeSupportHelpers = [];
 function activate() {
     loadConfig();
     logger.logLevel = logger.logLevels[config.app.logLevel];
-    if (config.app.logLevel == "info") {
-        logger.log("info", "Activating app with verbose logging.");
+    if (config.app.logLevel == "trace") {
+        logger.log(warn, "Activating app with verbose logging.");
     }
 
     document.title = config.app.title;
@@ -31,7 +31,7 @@ function activate() {
     if (config.app.updateRate && config.app.updateRate > 2000)
         updateRate = config.app.updateRate;
     else
-        logger.log("error", "Invalid update rate in config, default will be used!");
+        logger.log(error, "Invalid update rate in config, default will be used!");
 }
 
 function detailPaneReady() {
@@ -63,7 +63,7 @@ function loadMachines() {
     }
 }
 
-async function sendSmipQuery(theQuery, callBack) {
+async function sendSmipQuery(theQuery, callBack) {  //TODO: this method needs to send typeName to callBack
     if (!currentBearerToken) {
         currentBearerToken = await smip.getBearerToken();
     }
@@ -77,13 +77,13 @@ async function sendSmipQuery(theQuery, callBack) {
         }
         catch (ex) {
             if (ex == 400 || ex == 401 || ex == 403) {
-                logger.log("info", "Attempting bearer token refresh with SMIP.");
+                logger.log(info, "Attempting bearer token refresh with SMIP.");
                 try {
                     currentBearerToken = await smip.getBearerToken();
                     callBack(await smip.performGraphQLRequest(theQuery, config.user.smipUrl, currentBearerToken), theQuery, this);                        
                 }
                 catch (ex) {
-                    logger.log("error", "Authentication or bearer token refresh failure: " + JSON.stringify(ex));
+                    logger.log(error, "Authentication or bearer token refresh failure: " + JSON.stringify(ex));
                     showToast("Error!", "Attempts to authenticate with the SMIP using configured credentials have failed. Check your settings and re-try.");
                     stopUpdate();
                     stopSpinner("sendSmipQuery");
@@ -91,11 +91,11 @@ async function sendSmipQuery(theQuery, callBack) {
             } else {
                 errorRetries++;
                 if (ex == 502) {
-                    logger.log("warn", "Proxy error - 502: " + ex);
+                    logger.log(warn, "Proxy error - 502: " + ex);
                 } else {
-                    logger.log("warn", "Caught an error: " + ex);
-                    logger.log("warn", ex.message);
-                    logger.log("info", ex.stack);
+                    logger.log(warn, "Caught an error: " + ex);
+                    logger.log(warn, ex.message);
+                    logger.log(info, ex.stack);
                 }
             }
             if (errorRetries > 3) {
@@ -108,7 +108,7 @@ async function sendSmipQuery(theQuery, callBack) {
     }
 }
 
-function showMachines(payload, query) {
+function showMachines(payload, updatingTypeName) {
     if (payload && payload.data && payload.data.equipments && payload.data.equipments.length != 0) {
         var discoveredMachines = [];
         payload.data.equipments.forEach (function(item, index, arr) {
@@ -127,8 +127,8 @@ function showMachines(payload, query) {
         });
         //Delete widgets if equipment removed
         document.getElementById("machines").childNodes.forEach (function(item) {
-            if (discoveredMachines.indexOf(item.id) == -1) {
-                logger.log("info", item.id + " was no longer found and is being removed");
+            if (item.typeName == updatingTypeName && discoveredMachines.indexOf(item.id) == -1) {
+                logger.log(info, item.id + " was no longer found and is being removed");
                 document.getElementById("machines").removeChild(item);
                 //TODO: If the deleted one was selected, we need to clean-up the details pane too
             }
@@ -137,11 +137,11 @@ function showMachines(payload, query) {
         if (discoveredMachines.length > 0 && currentDetailPane)
             currentDetailPane.update();
     } else {
-        logger.log("info", "Empty payload for equipments query. Nothing to populate.");
+        logger.log(info, "Empty payload for equipments query. Nothing to populate.");
         showToast("Warning!", "No compatible machine instances found on the SMIP instance. Please add equipment instances that match the SM Profile dependency.");    
     }
     //Update UI
-    logger.log("info", "Done updating");
+    logger.log(info, "Done updating");
     stopSpinner("showMachines done");
     if (firstDraw) {
         selectMachine(0, discoveredMachines);
@@ -165,7 +165,7 @@ function machineClicked(event) {
     var widget = event.target || event.srcElement;
     widget = widget.widget;
     widget.select(document.getElementById("machines"));
-    logger.log("info", "Rendering details for " + JSON.stringify(widget));
+    logger.log(info, "Rendering details for " + JSON.stringify(widget));
     document.getElementById("machineName").innerHTML = widget.displayName;
 
     if (currentDetailPane != null) {
@@ -191,12 +191,16 @@ function showToast(title, message) {
 }
 
 function startSpinner(source) {
-    logger.log("info", "spinner started " + source);
+    if (source)
+        source = " for " + source;
+    logger.log(trace, "spinner started" + source);
     document.getElementById("btnRefresh").innerHTML = "<img src=\"spinner.gif\" height=\"22px\">";
 }
 
 function stopSpinner(source) {
-    logger.log("info", "spinner stopped " + source);
+    if (source)
+        source = " for " + source;
+    logger.log(trace, "spinner stopped" + source);
     document.getElementById("btnRefresh").innerHTML = "Refresh";
 }
 
@@ -291,7 +295,7 @@ function updateConfigForm() {
 }
 
 function saveConfig() {
-    logger.log("info", "Saving Config");
+    logger.log(info, "Saving Config");
     var form = document.getElementById("configForm").elements;
     config.user.smipUrl = form.smipurl.value;
     config.user.authenticator = form.authenticator.value;
@@ -321,7 +325,7 @@ function saveConfig() {
     toggleElement("toast", "none");
     toggleElement("settings", "none");
     setCookie("config", config.user, 90);
-    logger.log("info", "User config now: " + JSON.stringify(config.user));
+    logger.log(info, "User config now: " + JSON.stringify(config.user));
 
     //Clear Machines
     stopUpdate();
@@ -345,7 +349,7 @@ function setCookie(name, value, duration) {
     var d = new Date();
     d.setTime(d.getTime() + (duration*24*60*60*1000));
     duration = d.toUTCString();
-    logger.log("info", "Saving cookie: " + name + ", value: " + JSON.stringify(value));
+    logger.log(info, "Saving cookie: " + name + ", value: " + JSON.stringify(value));
     var cookie = [name, "=", JSON.stringify(value), "; expires=" + duration + "; SameSite=Strict;"].join("");
     document.cookie = cookie;
 }
@@ -353,7 +357,7 @@ function setCookie(name, value, duration) {
 function getCookie(name) {
     var value = document.cookie.match(new RegExp(name + '=([^;]+)'));
     value && (value = JSON.parse(value[1]));
-    logger.log("info", "Got cookie: " + name + ", value: " + JSON.stringify(value));
+    logger.log(info, "Got cookie: " + name + ", value: " + JSON.stringify(value));
     return value;
 }
 
@@ -363,7 +367,7 @@ function updateLoop() {
             loadMachines();
         }, updateRate);
     } else {
-        logger.log("info", "Verbose logging is on, update firing once -- loop disabled!");
+        logger.log(info, "Verbose logging is on, update firing once -- loop disabled!");
         //loadMachines();
     }
 }
