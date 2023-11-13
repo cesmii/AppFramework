@@ -6,7 +6,7 @@ config = {
         "logo": "customlogo.png",
         "style": "custom.css",
         "updateRate": 5000,         //high update rates will have global performance impact -- this interface is not intended for high speed data!
-        "machineType": "example",   //to support a different type, you must load or create TypeSupport resources
+        "machineTypes": ["example"],   //to support a different type, you must load or create TypeSupport resources
         "logLevel": "error"       //levels are: error, warn, info
     }, 
     user: { //These are defaults that the user can over-ride. Get them from your SMIP instance.
