@@ -22,8 +22,9 @@
         <link rel="stylesheet" href="toast.css" type="text/css">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" integrity="sha512-ElRFoEQdI5Ht6kZvyzXhYG9NqjtkmlkfYk0wr6wHxU9JEHakS7UJZNeml5ALk+8IKlU6jDgMabC3vkumRokgJA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="gauge.js"></script>
-        <script type="text/javascript" src="TypeSupport/typeSupport.js"></script>
         <script defer type="text/javascript" src="logger.js"></script>
+        <script type="text/javascript" src="TypeSupport/types.js"></script>
+        <script type="text/javascript" src="TypeSupport/typeSupport.js"></script>
         <script defer type="text/javascript" src="defaults.js"></script>
         <script defer type="text/javascript" src="config.js"></script>
         <script defer type="text/javascript" src="smip.js"></script>
@@ -39,10 +40,10 @@
                 <button onclick="loadMachines()" id="btnRefresh" style="float:right; width:100px;height:44px;">Refresh</button>
                 <button onclick="toggleElement('settings')" id="btnConfig" style="float:right; width:100px;height:44px;margin-right:14px;">Settings</button>
             </div>
-            <h1 id="machineName">Loading...</h1>
+            <h1 id="machineName" onclick="toggleElement('machines', undefined, true)">Loading...</h1>
             <!-- toast alerts -->
             <div id="toast" class="alert error" style="display:none;">
-                <label class="close" title="close" for="alert1">
+                <label class="close" title="close">
                     <i class="icon-remove" onclick="toggleElement('toast', 'none');updateLoop();"></i>
                 </label>
                 <p class="inner" id="toast-text">

@@ -1,46 +1,46 @@
 const typeSupport = {
+    //Helpers
+    getResourcePath: function(searchType, resourceKind) {
+        for (var key in machineTypes) {
+            if (key == searchType)
+                return "TypeSupport/" + machineTypes[key].path + "/" + machineTypes[key][resourceKind];
+        };
+    },
+
     //Called by the main page code when a detail pane is needed
     //  Tries to the appropriate detailpane resources for a given type and loads them into the DOM
     loadDetailPaneForType: function(typeName, callBack) {
-        var scriptPath = typeName + ".js";
-        var cssPath = typeName + ".css";
-
         logger.log("info", "Creating new detail pane for: " + typeName);
+        //Load script
+        var scriptPath = this.getResourcePath(typeName, "script");
+        logger.log("info", "Loading resource: " + scriptPath);
         if (scriptPath) {
             var js = document.createElement("script");
             js.type = "text/javascript";
-            js.src = "TypeSupport/" + scriptPath + this.cacheBust();
+            js.src = scriptPath + this.cacheBust();
             logger.log("info", "DetailPane loaded script: " + JSON.stringify(js.src));
             js.onload = callBack;
             document.body.appendChild(js);
         } else {
             logger.log("info", "Could not find a detail pane script for type: " + typeName);
         }
+        //Load css
+        var cssPath = this.getResourcePath(typeName, "style");
+        logger.log("info", "Loading resource: " + cssPath);
         if (cssPath) {
             var css = document.createElement("link");
             css.setAttribute("rel", "stylesheet");
-            css.setAttribute("href", "TypeSupport/" + cssPath + this.cacheBust());
+            css.setAttribute("href", cssPath + this.cacheBust());
             document.head.appendChild(css);
             logger.log("info", "DetailPane loaded css: " + JSON.stringify(css.getAttribute("href")));
         } else {
             logger.log("info", "Could not find a detail pane stylesheet for type: " + typeName);
         }
+        return true;
     },
-    getIconForType:function(typename) {
-        var typename = typename.toLowerCase() + ".png";
-        return this.getMyPath() + typename;
-    },
-    getMyPath:function() {
-        return "TypeSupport/";
-        //TODO: do clever stuff to figure out relative path of icons
-        /*
-        var scripts= document.getElementsByTagName('script');
-        for (var i=0;i<scripts.length;i++){
-            if (scripts[i].src.toLowerCase().indexOf("typeicons.js") != -1) {
-                //this is the path of the current script
-            }
-        }
-        */
+    getIconForType:function(typeName) {
+        var iconPath = this.getResourcePath(typeName, "icon");
+        return iconPath;
     },
     cacheBust:function() {
         return "?" + (Math.round(Date.now())).toString(36);

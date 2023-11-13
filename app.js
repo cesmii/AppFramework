@@ -6,9 +6,15 @@ var currentBearerToken = "";
 var currentDetailPane = null;
 var configFavorites = null;
 var logLevel = logger.logLevels.error;
+var firstDraw = true;
+var typeSupportHelpers = [];
 
 function activate() {
     loadConfig();
+    logger.logLevel = logger.logLevels[config.app.logLevel];
+    if (config.app.logLevel == "info") {
+        logger.log("info", "Activating app with verbose logging.");
+    }
 
     document.title = config.app.title;
     document.getElementById("machineName").innerHTML = config.app.title;
@@ -19,11 +25,9 @@ function activate() {
         css.setAttribute("href", config.app.style + typeSupport.cacheBust());
         document.head.appendChild(css);    
     }
-    typeSupport.loadDetailPaneForType(config.app.machineType, detailPaneReady);
-    logger.logLevel = logger.logLevels[config.app.logLevel];
-    if (config.app.logLevel == "info") {
-        logger.log("info", "Activating app with verbose logging.");
-    }
+    for (var i in config.app.machineTypes) {
+        typeSupport.loadDetailPaneForType(config.app.machineTypes[i], detailPaneReady);
+    };
     if (config.app.updateRate && config.app.updateRate > 2000)
         updateRate = config.app.updateRate;
     else
@@ -36,30 +40,25 @@ function detailPaneReady() {
 }
 
 function loadMachines() {
-    document.getElementById("btnRefresh").innerHTML = "<img src=\"spinner.gif\" height=\"22px\">";
+    startSpinner("loadMachines");
     if (config.user.smipUrl && config.user.smipUrl != "" &&
         config.user.authenticator && config.user.authenticator !== "" &&
         config.user.username && config.user.username != "" &&
         config.user.password && config.user.password != "" &&
         config.user.role && config.user.role != "") {
-            sendSmipQuery(queries.getEquipments(config.app.machineType, config.app.modelParentId), showMachines.bind(this));
+            for (var i in typeSupportHelpers) {
+                typeSupportHelpers[i].loadMachines(sendSmipQuery, showMachines);
+            }
+            //sendSmipQuery(queries.getEquipments(config.app.machineType, config.app.modelParentId), showMachines.bind(this));
         }
     else {
-        document.getElementById("btnRefresh").innerHTML = "Refresh";
-        if (config.app.machineType != "example") {
-            toggleElement("settings", "block");
-            stopUpdate();
-        } else {    //handle example case
-            if (!this.exampleDone) {
-                newMachine1 = new widgetFactory("example1", {"displayName": "Example #1", "typeName": "example", "id":"0001"}, null, typeSupport.getIconForType("example"), machineClicked);
-                document.getElementById("machines").appendChild(newMachine1.build(newMachine1));
-                newMachine2 = new widgetFactory("example2", {"displayName": "Example #2", "typeName": "example", "id":"0002"}, null, typeSupport.getIconForType("example"), machineClicked);
-                document.getElementById("machines").appendChild(newMachine2.build(newMachine2));
-                this.exampleDone = true;
-            }
-            if (currentDetailPane)
-                currentDetailPane.update();
-            document.getElementById("btnRefresh").innerHTML = "Refresh";
+        stopSpinner("loadMachines");
+        var discoveredMachines = [];
+        toggleElement("settings", "block");
+        stopUpdate();
+        if (firstDraw) {
+            selectMachine(0, discoveredMachines);
+            firstDraw = false;
         }
     }
 }
@@ -87,7 +86,7 @@ async function sendSmipQuery(theQuery, callBack) {
                     logger.log("error", "Authentication or bearer token refresh failure: " + JSON.stringify(ex));
                     showToast("Error!", "Attempts to authenticate with the SMIP using configured credentials have failed. Check your settings and re-try.");
                     stopUpdate();
-                    document.getElementById("btnRefresh").innerHTML = "Refresh";
+                    stopSpinner("sendSmipQuery");
                 }
             } else {
                 errorRetries++;
@@ -142,7 +141,24 @@ function showMachines(payload, query) {
         showToast("Warning!", "No compatible machine instances found on the SMIP instance. Please add equipment instances that match the SM Profile dependency.");    
     }
     //Update UI
-    document.getElementById("btnRefresh").innerHTML = "Refresh";
+    logger.log("info", "Done updating");
+    stopSpinner("showMachines done");
+    if (firstDraw) {
+        selectMachine(0, discoveredMachines);
+        firstDraw = false;
+    }
+}
+
+function selectMachine(i, discoveredMachines) {
+    for (var j=0; j<document.getElementById("machines").childNodes.length; j++) {
+        var item=document.getElementById("machines").childNodes[j];
+        if (discoveredMachines.indexOf(item.id) == -1) {
+            if (i == j) {
+                item.click();
+                break;
+            }
+        }
+    };
 }
 
 function machineClicked(event) {
@@ -151,14 +167,21 @@ function machineClicked(event) {
     widget.select(document.getElementById("machines"));
     logger.log("info", "Rendering details for " + JSON.stringify(widget));
     document.getElementById("machineName").innerHTML = widget.displayName;
+
     if (currentDetailPane != null) {
         currentDetailPane.destroy();
         //TODO: also remove scripts and css from page
     }
-    currentDetailPane = detailPane;   //TODO: of type
-    currentDetailPane.instanceId = widget.instanceId;
-    currentDetailPane.queryHandler = sendSmipQuery;
-    currentDetailPane.create("details");
+
+    for (var i in typeSupportHelpers) {
+        if (typeSupportHelpers[i].typeName == widget.typeName) {
+            currentDetailPane = typeSupportHelpers[i];
+            currentDetailPane.instanceId = widget.instanceId;
+            currentDetailPane.queryHandler = sendSmipQuery;
+            currentDetailPane.create("details");
+        }
+        //typeSupport.loadDetailPaneForType(config.app.machineTypes[i], detailPaneReady);
+    };
 }
 
 function showToast(title, message) {
@@ -167,16 +190,28 @@ function showToast(title, message) {
     toggleElement("toast", "block");
 }
 
-function toggleElement(id, toggleVal) {
-    if (typeof toggleVal === 'undefined')
+function startSpinner(source) {
+    logger.log("info", "spinner started " + source);
+    document.getElementById("btnRefresh").innerHTML = "<img src=\"spinner.gif\" height=\"22px\">";
+}
+
+function stopSpinner(source) {
+    logger.log("info", "spinner stopped " + source);
+    document.getElementById("btnRefresh").innerHTML = "Refresh";
+}
+
+function toggleElement(id, toggleVal, responsiveOnly) {
+    if (!responsiveOnly || (responsiveOnly && window.innerWidth <= 640)) {  //sync with css
+        if (typeof toggleVal === 'undefined')
         toggleVal = document.getElementById(id).style.display == "block" ? "none" : "block";
-    else {
-        if (toggleVal === true)
-            toggleVal = "block";
-        else if (toggleVal === false)
-            toggleVal = "none";
+        else {
+            if (toggleVal === true)
+                toggleVal = "block";
+            else if (toggleVal === false)
+                toggleVal = "none";
+        }
+        document.getElementById(id).style.display = toggleVal;
     }
-    document.getElementById(id).style.display = toggleVal;
 }
 function deleteElements(className) {
     var elements = Array.from(document.getElementsByClassName(className))
@@ -329,7 +364,7 @@ function updateLoop() {
         }, updateRate);
     } else {
         logger.log("info", "Verbose logging is on, update firing once -- loop disabled!");
-        loadMachines();
+        //loadMachines();
     }
 }
 
