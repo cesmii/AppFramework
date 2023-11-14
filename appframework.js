@@ -211,7 +211,7 @@ appFramework = {
         if (source)
             source = " for " + source;
         logger.log(trace, "spinner started" + source);
-        document.getElementById("btnRefresh").innerHTML = "<img src=\"spinner.gif\" height=\"22px\">";
+        document.getElementById("btnRefresh").innerHTML = "<i class=\"fas fa-sync-alt fa-spin\"></i>";
     },
     
     stopSpinner: function(source) {
