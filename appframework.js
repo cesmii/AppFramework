@@ -384,7 +384,7 @@ appFramework = {
         if (config.app.logLevel != "trace") {
             updateTimer = window.setInterval(function () { 
                 this.loadMachines();
-            }.bind(this), updateTimer);
+            }.bind(this), this.updateRate);
         } else {
             logger.log(info, "Verbose logging is on, update firing once -- loop disabled!");
         }
