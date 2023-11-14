@@ -12,7 +12,7 @@ class widgetFactory {
     };
 
     build(self) {
-        var newWidget = document.createElement("div");
+        var newWidget = document.createElement("li");
         newWidget.id = this.id;
         newWidget.className = "widget machine " + this.typeName;
         newWidget.widget = self;
@@ -27,7 +27,7 @@ class widgetFactory {
         newWidget.appendChild(widgetIcon);
         newWidget.addEventListener("click", this.clickHandler);
         if (this.typeName == this.childType) {
-            var widgetStatus = document.createElement("div");
+            var widgetStatus = document.createElement("li");
             widgetStatus.id = this.id.replace("station", "status");
             widgetStatus.className = "machine_status";
             widgetStatus.innerText = "<No Status>";

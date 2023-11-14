@@ -36,9 +36,7 @@
   background-color: var(--darkblue);
   color:white;
 }
-.machine.updating {
-  animation: fadeInFromNone 0.5s ease-out;
-}
+.machine.updating {}
 .machine_status {
   margin-top: 10px;
   text-align: center;

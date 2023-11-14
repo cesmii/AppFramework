@@ -40,7 +40,7 @@
                 <button onclick="appFramework.loadMachines()" id="btnRefresh" style="float:right; width:100px;height:44px;">Refresh</button>
                 <button onclick="appFramework.toggleElement('settings')" id="btnConfig" style="float:right; width:100px;height:44px;margin-right:14px;">Settings</button>
             </div>
-            <h1 id="machineName" onclick="appFramework.toggleElement('machines', undefined, true)">Loading...</h1>
+            <h1 id="machineName">Loading...</h1>
             <!-- toast alerts -->
             <div id="toast" class="alert error" style="display:none;">
                 <label class="close" title="close">
@@ -54,7 +54,13 @@
         <div class="content">
             <div id="layout">
                 <!-- side navigation -->
-                <div id="machines"></div>
+                <section class="top-nav">
+                    <input id="menu-toggle" type="checkbox" />
+                    <label class='menu-button-container' for="menu-toggle">
+                        <div class='menu-button'></div>
+                    </label>
+                    <ul id="machines" class="menu"></ul>
+                </section>
                 <!-- details root: populated by loaded DetailsPane script  -->
                 <div id="details">
                     
