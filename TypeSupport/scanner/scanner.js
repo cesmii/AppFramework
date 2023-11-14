@@ -93,7 +93,7 @@ typeSupportHelpers.push(scannerType = {
           }
         }
         callBack(payload, this.typeName);
-        stopSpinner("inner loadMachines");  //Usually the main app handles this, but the example case is hard-coded so doesn't callback the main app.
+        appFramework.stopSpinner("inner loadMachines");  //Usually the main app handles this, but the example case is hard-coded so doesn't callback the main app.
     },
     //  update: called when the main page says its time to update the contents of the page
     //    Implementation should fetching/render new data

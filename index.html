@@ -1,6 +1,6 @@
 <!DOCTYPE html>
     <head>
-        <title>CESMII Machine View</title>
+        <title>CESMII App Framework</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
         <link rel="shortcut icon" href="./favicon.ico">
         <link rel="manifest" href="./manifest.json">
@@ -30,21 +30,21 @@
         <script defer type="text/javascript" src="smip.js"></script>
         <script defer type="text/javascript" src="smip-queries.js"></script>
         <script defer type="text/javascript" src="widgets.js"></script>
-        <script defer type="text/javascript" src="app.js"></script>
+        <script defer type="text/javascript" src="appframework.js"></script>
     </head>
-    <body onload="activate()">
+    <body onload="appFramework.activate()">
         <!-- title bars -->
         <div class="titles">
             <div class="toptitle">
                 <img id="imgLogo" src="cesmii.png" style="height:40px" onerror="null;this.src='cesmii.png';logger.log('warn', 'Failed to load custom logo, reverting to defatult!')">
-                <button onclick="loadMachines()" id="btnRefresh" style="float:right; width:100px;height:44px;">Refresh</button>
-                <button onclick="toggleElement('settings')" id="btnConfig" style="float:right; width:100px;height:44px;margin-right:14px;">Settings</button>
+                <button onclick="appFramework.loadMachines()" id="btnRefresh" style="float:right; width:100px;height:44px;">Refresh</button>
+                <button onclick="appFramework.toggleElement('settings')" id="btnConfig" style="float:right; width:100px;height:44px;margin-right:14px;">Settings</button>
             </div>
-            <h1 id="machineName" onclick="toggleElement('machines', undefined, true)">Loading...</h1>
+            <h1 id="machineName" onclick="appFramework.toggleElement('machines', undefined, true)">Loading...</h1>
             <!-- toast alerts -->
             <div id="toast" class="alert error" style="display:none;">
                 <label class="close" title="close">
-                    <i class="icon-remove" onclick="toggleElement('toast', 'none');updateLoop();"></i>
+                    <i class="icon-remove" onclick="appFramework.toggleElement('toast', 'none');this.updateLoop();"></i>
                 </label>
                 <p class="inner" id="toast-text">
                 </p>
@@ -64,7 +64,7 @@
         <!-- settings pop-up -->
         <div id="settings" style="display:none; float:right">
             <p>SMIP Settings</p>
-            <form id="configForm" action="javascript:saveConfig()" accept-charset="utf-8">
+            <form id="configForm" action="javascript:appFramework.saveConfig()" accept-charset="utf-8">
                 
                 <div id="divFavorites" style="display: none;">
                     <label for="smipfavorite">Favorites</label><br>

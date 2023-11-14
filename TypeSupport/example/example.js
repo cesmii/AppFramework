@@ -1,6 +1,7 @@
 typeSupportHelpers.push(exampleType = {
     /* IDetailPane Interface Required Properties */
-    typeName: "example",  //the SMIP type this detail pane is responsible for
+    name: "exampleTypeSupportHelper", //Only used for tracing "this" while debugging
+    typeName: "example",      //the SMIP type this detail pane is responsible for
     rootElement: null,        //the HTML element to which this detail pane may append/destroy child nodes
     instanceId: null,         //the SMIP id of the selected object that requires this detail pane
     queryHandler: null,       //the SMIP query method assigned by the host page
@@ -38,7 +39,7 @@ typeSupportHelpers.push(exampleType = {
         }
       }
       callBack(payload, this.typeName);
-      stopSpinner("inner loadMachines");  //Usually the main app handles this, but the example case is hard-coded so doesn't callback the main app.
+      appFramework.stopSpinner("inner loadMachines");  //Usually the main app handles this, but the example case is hard-coded so doesn't callback the main app.
     },
     //  update: called when the main page says its time to update the contents of the page
     //    Implementation should fetch/render new data

@@ -1,9 +1,12 @@
 const typeSupport = {
+    name: "typeSupport",
+    readyCallback: null,
     machineTypes: {},
     //Called by the main page code when a detail pane is needed
     //  Tries to find the appropriate detailpane resources for a given type and loads them into the DOM
     loadDetailPaneForType: function(typeName, callBack) {
         logger.log(info, "Creating new detail pane for: " + typeName);
+        this.readyCallback = callBack;
         //Load script
         var scriptPath = this.getResourcePath(typeName, "script");
         logger.log(info, "Loading resource: " + scriptPath);
@@ -12,8 +15,11 @@ const typeSupport = {
             js.type = "text/javascript";
             js.src = scriptPath + this.cacheBust();
             logger.log(info, "DetailPane loaded script: " + JSON.stringify(js.src));
-            js.onload = callBack;
+            //js.onload = callBack;
             document.body.appendChild(js);
+            js.addEventListener('load', () => {
+                this.detailPaneForTypeReady();
+            });
         } else {
             logger.log(info, "Could not find a detail pane script for type: " + typeName);
         }
@@ -31,7 +37,10 @@ const typeSupport = {
         }
         return true;
     },
-    getIconForType:function(typeName) {
+    detailPaneForTypeReady: function() {
+        this.readyCallback();
+    },
+    getIconForType: function(typeName) {
         var iconPath = this.getResourcePath(typeName, "icon");
         return iconPath;
     },
