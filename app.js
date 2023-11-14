@@ -87,7 +87,7 @@ function loadMachines() {
     }
 }
 
-async function sendSmipQuery(theQuery, typeName, callBack) {  //TODO: this method needs to send typeName to callBack
+async function sendSmipQuery(theQuery, callBack) {  //TODO: this method needs to send typeName to callBack
     if (!currentBearerToken) {
         currentBearerToken = await smip.getBearerToken();
     }

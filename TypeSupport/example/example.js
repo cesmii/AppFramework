@@ -23,7 +23,7 @@ typeSupportHelpers.push(exampleType = {
         myDiv.setAttribute("class", "example-hello");
         this.rootElement.appendChild(myDiv);
 
-        logger.log(info, "Detail pane html now: " + this.rootElement.innerHTML.trim());
+        logger.log(trace, "Detail pane html now: " + this.rootElement.innerHTML.trim());
       }
     },
     //  loadMachines: called when the main page says its time to load a list of machines
