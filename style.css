@@ -54,10 +54,7 @@ h1 {
   display: flex;
   width: 100%;
 }
-#machines {
-  display:block;
-  width: var(--navwidth);
-}
+#machines {}
 #details {
   background: lightgray;
   border-radius: 4px;
@@ -76,32 +73,11 @@ h1 {
   #machineName {
     border: 1px solid dimgray;
   }
-  #machineName::after {
-    content:url(arrow.png);
-  }
   #machineName:hover {
     border: 1px solid blue;
   }
-  #machines {
-    display:none;
-    padding: 18px;
-    background-color:white;
-    border:1px solid rgb(99, 99, 99);
-    color:black;
-    border-radius: 8px;
-    position: absolute;
-    top: 7px;
-    left: 120px;
-    z-index: 1; 
-    width: 205px;
-    height: 340px;
-    overflow-x: none;
-    overflow-y: auto;
-    -webkit-box-shadow: rgb(0 0 0 / 30%) 0 1px 10px;
-    -moz-box-shadow: rgba(0,0,0,0.3) 0 1px 10px;
-    box-shadow: rgb(0 0 0 / 30%) 0 1px 10px;
-  }
 }
+
 /* Settings popup */
 #settings {
   padding: 18px;
@@ -141,4 +117,95 @@ h1 {
 }
 #settings input[type="submit"] {
   padding:8px;
+}
+
+/** Navigation **/
+.top-nav {
+    z-index: 11;
+}
+
+.menu {
+  padding: 0;
+  width: min-content;
+}
+
+.menu-button-container {
+  align-items: center;
+  cursor: pointer;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  width: 30px;
+}
+
+#menu-toggle {
+  display: none;
+}
+
+.menu-button,
+.menu-button::before,
+.menu-button::after {
+  background-color: #ffffff;
+  border-radius: 2px;
+  display: block;
+  height: 4px;
+  position: absolute;
+  transition: transform 400ms cubic-bezier(0.23, 1, 0.32, 1);
+  width: 30px;
+}
+
+.menu-button::before {
+  content: '';
+  margin-top: -8px;
+}
+
+.menu-button::after {
+  content: '';
+  margin-top: 8px;
+}
+
+#menu-toggle:checked + .menu-button-container .menu-button::before {
+  margin-top: 0px;
+  transform: rotate(405deg);
+}
+
+#menu-toggle:checked + .menu-button-container .menu-button {
+  background: rgba(255, 255, 255, 0);
+}
+
+#menu-toggle:checked + .menu-button-container .menu-button::after {
+  margin-top: 0px;
+  transform: rotate(-405deg);
+}
+
+@media (max-width: 700px) {
+  .menu-button-container {
+    display: flex;
+    position: absolute;
+    top: -23px;
+    left: 15px;
+  }
+
+  .menu {
+    background: #f0f0f0;
+    box-shadow: rgb(0 0 0 / 30%) 0 10px 15px;
+    height: 100%;
+    margin-top: 0;
+    position: absolute;
+  }
+
+  #menu-toggle ~ .menu li, #menu-toggle ~ .menu li p, #menu-toggle ~ .menu li img {
+    display: none;
+  }
+
+  #menu-toggle:checked ~ .menu li, #menu-toggle:checked ~ .menu li p, #menu-toggle:checked ~ .menu li img {
+    display: inline-grid;
+    height: auto;
+    padding: 0.5em;
+    transition: height 400ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  #menu-toggle:checked ~ .menu li img {
+    margin: 0 auto;
+  }
 }
