@@ -3,9 +3,10 @@
 A simple framework for creating SMIP web apps. 
 Extend by adding resources for each Profile (EquipmentType) you want to support to the TypeSupport folder -- see `TypeSupport\example.*` for more details. 
 
-Once you've added your TypeSupport sub-folder, activate the type by modifying `types.js`, then modify `config.js` to load the `machineTypes` you want to display in a given instance of this AppFramework.
-
 SymLinking is supported (if your host supports it)
+
+Once you've added your TypeSupport sub-folder, modiyfing `config.js` to load the `machineTypes` you want to display in a given instance of this AppFramework.
+
 
 ## See Also
 

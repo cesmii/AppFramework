@@ -1,9 +1,11 @@
 const typeSupport = {
+    machineTypes: {},
+
     //Helpers
     getResourcePath: function(searchType, resourceKind) {
-        for (var key in machineTypes) {
+        for (var key in this.machineTypes) {
             if (key == searchType)
-                return "TypeSupport/" + machineTypes[key].path + "/" + machineTypes[key][resourceKind];
+                return "TypeSupport/" + searchType + "/" + this.machineTypes[key][resourceKind];
         };
     },
 

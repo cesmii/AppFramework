@@ -15,6 +15,16 @@ function activate() {
     if (config.app.logLevel == "trace") {
         logger.log(warn, "Activating app with verbose logging.");
     }
+    
+    logger.log(info, "Conifgured to support types: ", JSON.stringify(config.app.machineTypes));
+    for (var i=0; i<config.app.machineTypes.length; i++) {
+        var js = document.createElement("script");
+        js.type = "text/javascript";
+        js.src = "TypeSupport/" + config.app.machineTypes[i] + "/type.js" + typeSupport.cacheBust();
+        logger.log(info, "Adding support for type: " + JSON.stringify(js.src));
+        js.onload = initDetailPanes;
+        document.body.appendChild(js);
+    }
 
     document.title = config.app.title;
     document.getElementById("machineName").innerHTML = config.app.title;
@@ -25,13 +35,21 @@ function activate() {
         css.setAttribute("href", config.app.style + typeSupport.cacheBust());
         document.head.appendChild(css);    
     }
-    for (var i in config.app.machineTypes) {
-        typeSupport.loadDetailPaneForType(config.app.machineTypes[i], detailPaneReady);
-    };
+    
     if (config.app.updateRate && config.app.updateRate > 2000)
         updateRate = config.app.updateRate;
     else
         logger.log(error, "Invalid update rate in config, default will be used!");
+}
+
+var detailPanesLoaded = 0;
+function initDetailPanes(loaded, loader) {
+    detailPanesLoaded++;
+    if (detailPanesLoaded == config.app.machineTypes.length) {
+        for (var i in config.app.machineTypes) {
+            typeSupport.loadDetailPaneForType(config.app.machineTypes[i], detailPaneReady);
+        };
+    }
 }
 
 function detailPaneReady() {
@@ -56,10 +74,6 @@ function loadMachines() {
         var discoveredMachines = [];
         toggleElement("settings", "block");
         stopUpdate();
-        if (firstDraw) {
-            selectMachine(0, discoveredMachines);
-            firstDraw = false;
-        }
     }
 }
 
@@ -142,18 +156,23 @@ function showMachines(payload, updatingTypeName) {
     }
     //Update UI
     logger.log(info, "Done updating");
-    stopSpinner("showMachines done");
     if (firstDraw) {
-        selectMachine(0, discoveredMachines);
+        //Give detail pane's injected dependencies a second to load
+        window.setTimeout(function () {
+            selectMachine(0, discoveredMachines)
+          }.bind(this), 700);
         firstDraw = false;
     }
+    stopSpinner("showMachines done");
 }
 
 function selectMachine(i, discoveredMachines) {
     for (var j=0; j<document.getElementById("machines").childNodes.length; j++) {
         var item=document.getElementById("machines").childNodes[j];
-        if (discoveredMachines.indexOf(item.id) == -1) {
+        console.log("should i select", i, j);
+        if (discoveredMachines.indexOf(item.id) != -1) {
             if (i == j) {
+                console.log("yes i should");
                 item.click();
                 break;
             }
@@ -170,7 +189,7 @@ function machineClicked(event) {
 
     if (currentDetailPane != null) {
         currentDetailPane.destroy();
-        //TODO: also remove scripts and css from page
+        //TODO: also remove scripts and css from page?
     }
 
     for (var i in typeSupportHelpers) {
@@ -180,7 +199,6 @@ function machineClicked(event) {
             currentDetailPane.queryHandler = sendSmipQuery;
             currentDetailPane.create("details");
         }
-        //typeSupport.loadDetailPaneForType(config.app.machineTypes[i], detailPaneReady);
     };
 }
 
