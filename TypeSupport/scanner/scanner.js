@@ -1,14 +1,6 @@
-//Inject dependencies
-var js = document.createElement("script");
-js.type = "text/javascript";
-js.src = "TypeSupport/scanner/html5-qrcode.min.js";
-document.body.appendChild(js);
-
-//Inject config
-var myConfig = document.createElement("script");
-myConfig.type = "text/javascript";
-myConfig.src = "TypeSupport/scanner/scanner-config.js";
-document.body.appendChild(myConfig);
+// Bootstrap dependencies and config
+include("TypeSupport/scanner/html5-qrcode.min.js");
+include("TypeSupport/scanner/scanner-config.js");
 
 typeSupportHelpers.push(scannerType = {
     /* IDetailPane Interface Properties */

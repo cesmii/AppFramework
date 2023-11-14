@@ -1,9 +1,10 @@
-
+//global variables
 var updateTimer = null;
 var configFavorites = null;
 var logLevel = logger.logLevels.error;
 var typeSupportHelpers = [];
 
+//main app framework code
 appFramework = {
     name: "appFramework",
     firstDraw: true,
@@ -22,12 +23,7 @@ appFramework = {
         
         logger.log(info, "Conifgured to support types: ", JSON.stringify(config.app.machineTypes));
         for (var i=0; i<config.app.machineTypes.length; i++) {
-            var js = document.createElement("script");
-            js.type = "text/javascript";
-            js.src = "TypeSupport/" + config.app.machineTypes[i] + "/type.js" + typeSupport.cacheBust();
-            logger.log(info, "Adding support for type: " + JSON.stringify(js.src));
-            document.body.appendChild(js);
-            js.addEventListener('load', () => {
+            include("TypeSupport/" + config.app.machineTypes[i] + "/type.js", () => {
                 this.initDetailPanes();
             });
         }
@@ -35,12 +31,7 @@ appFramework = {
         document.title = config.app.title;
         document.getElementById("machineName").innerHTML = config.app.title;
         document.getElementById("imgLogo").src = config.app.logo;
-        if (config.app.style && config.app.style != "") {
-            var css = document.createElement("link");
-            css.setAttribute("rel", "stylesheet");
-            css.setAttribute("href", config.app.style + typeSupport.cacheBust());
-            document.head.appendChild(css);    
-        }
+        include(config.app.style);
         
         if (config.app.updateRate && config.app.updateRate > 2000)
             this.updateRate = config.app.updateRate;
@@ -403,3 +394,32 @@ appFramework = {
         window.clearInterval(updateTimer);
     }
 }
+
+//global function to simplify bootstrapping resources
+const include = (function(source, callBack) {
+    if (!source || source == "") {
+        logger.log("warn", "Could not include an empty source");
+        return false;
+    }
+    cacheBust = function() {
+        return "?" + (Math.round(Date.now())).toString(36);
+    };
+
+    if (source.indexOf(".css") != -1) {
+        var css = document.createElement("link");
+        css.setAttribute("rel", "stylesheet");
+        css.setAttribute("href", source + cacheBust());
+        document.head.appendChild(css);    
+    } else {
+        var js = document.createElement("script");
+        js.type = "text/javascript";
+        js.src = source + cacheBust();
+        document.body.appendChild(js);
+        if (callBack) {
+            js.addEventListener('load', () => {
+                callBack();
+            });
+        }    
+    }
+    return true;
+})

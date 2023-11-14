@@ -11,13 +11,7 @@ const typeSupport = {
         var scriptPath = this.getResourcePath(typeName, "script");
         logger.log(info, "Loading resource: " + scriptPath);
         if (scriptPath) {
-            var js = document.createElement("script");
-            js.type = "text/javascript";
-            js.src = scriptPath + this.cacheBust();
-            logger.log(info, "DetailPane loaded script: " + JSON.stringify(js.src));
-            //js.onload = callBack;
-            document.body.appendChild(js);
-            js.addEventListener('load', () => {
+            include(scriptPath, () => {
                 this.detailPaneForTypeReady();
             });
         } else {
@@ -26,12 +20,9 @@ const typeSupport = {
         //Load css
         var cssPath = this.getResourcePath(typeName, "style");
         logger.log(info, "Loading resource: " + cssPath);
-        if (cssPath) {
-            var css = document.createElement("link");
-            css.setAttribute("rel", "stylesheet");
-            css.setAttribute("href", cssPath + this.cacheBust());
-            document.head.appendChild(css);
-            logger.log(info, "DetailPane loaded css: " + JSON.stringify(css.getAttribute("href")));
+        if (cssPath && cssPath != "") {
+            include(cssPath);
+            logger.log(info, "DetailPane loaded css: " + JSON.stringify(cssPath));
         } else {
             logger.log(info, "Could not find a detail pane stylesheet for type: " + typeName);
         }
@@ -50,9 +41,6 @@ const typeSupport = {
             if (key == searchType)
                 return "TypeSupport/" + searchType + "/" + this.machineTypes[key][resourceKind];
         };
-    },
-    cacheBust:function() {
-        return "?" + (Math.round(Date.now())).toString(36);
     }
 };
 
