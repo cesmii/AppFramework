@@ -83,8 +83,7 @@ typeSupportHelpers.push(scannerType = {
           }
           logger.log(trace, "Scanner pane html now: " + this.rootElement.innerHTML.trim());
         }
-      },
-
+    },
     loadMachines: function(smipQueryFunction, callBack) {
         var payload = {
           data: {

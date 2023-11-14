@@ -67,7 +67,6 @@ function loadMachines() {
             for (var i in typeSupportHelpers) {
                 typeSupportHelpers[i].loadMachines(sendSmipQuery, showMachines);
             }
-            //sendSmipQuery(queries.getEquipments(config.app.machineType, config.app.modelParentId), showMachines.bind(this));
         }
     else {
         stopSpinner("loadMachines");
@@ -169,10 +168,8 @@ function showMachines(payload, updatingTypeName) {
 function selectMachine(i, discoveredMachines) {
     for (var j=0; j<document.getElementById("machines").childNodes.length; j++) {
         var item=document.getElementById("machines").childNodes[j];
-        console.log("should i select", i, j);
         if (discoveredMachines.indexOf(item.id) != -1) {
             if (i == j) {
-                console.log("yes i should");
                 item.click();
                 break;
             }
