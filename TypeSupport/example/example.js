@@ -44,7 +44,7 @@ typeSupportHelpers.push(exampleType = {
     //    Implementation should fetch/render new data
     update: function() {
       if (this.ready) {
-        logger.log(warn, "Processing update request on example detail pane!");
+        logger.log(info, "Processing update request on example detail pane!");
         // Pause updates until this one is processed
         this.ready = false;
         document.getElementById("divHello").innerHTML = this.helloHTML.replace("##", this.instanceId) + "<br><br>This pane has been updated " + this.getNextNumber() + " times...";

@@ -52,12 +52,15 @@ function initDetailPanes(loaded, loader) {
     }
 }
 
+var detailPanesReady = 0;
 function detailPaneReady() {
+    detailPanesReady++;
     for (var i in typeSupportHelpers) {
         typeSupportHelpers[i].queryHandler = sendSmipQuery;
     }
     loadMachines();
-    updateLoop();
+    if (detailPanesReady == config.app.machineTypes.length)
+        updateLoop();
 }
 
 function loadMachines() {
@@ -69,6 +72,12 @@ function loadMachines() {
         config.user.role && config.user.role != "") {
             for (var i in typeSupportHelpers) {
                 typeSupportHelpers[i].loadMachines(showMachines);
+            }
+            //Update the details pane if present
+            if (currentDetailPane) {
+                //if (currentDetailPane.typeName == updatingTypeName) {
+                    currentDetailPane.update();
+                //}
             }
         }
     else {
@@ -124,7 +133,6 @@ async function sendSmipQuery(theQuery, typeName, callBack) {  //TODO: this metho
 }
 
 function showMachines(payload, updatingTypeName) {
-    console.log("at showMachines with typename in this: " + this.typeName);
     if (payload && payload.data && payload.data.equipments && payload.data.equipments.length != 0) {
         var discoveredMachines = [];
         payload.data.equipments.forEach (function(item, index, arr) {
@@ -149,12 +157,6 @@ function showMachines(payload, updatingTypeName) {
                 //TODO: If the deleted one was selected, we need to clean-up the details pane too
             }
         });
-        //Update the details pane if present
-        if (discoveredMachines.length > 0 && currentDetailPane) {
-            if (currentDetailPane.typeName == updatingTypeName) {
-                currentDetailPane.update();
-            }
-        }
     } else {
         logger.log(info, "Empty payload for equipments query. Nothing to populate.");
         showToast("Warning!", "No compatible machine instances found on the SMIP instance. Please add equipment instances that match the SM Profile dependency.");    
@@ -382,16 +384,16 @@ function getCookie(name) {
 }
 
 function updateLoop() {
+    window.clearInterval(updateRate);
     if (config.app.logLevel != "trace") {
-        updateTimer = setInterval(function () { 
+        updateTimer = window.setInterval(function () { 
             loadMachines();
         }, updateRate);
     } else {
         logger.log(info, "Verbose logging is on, update firing once -- loop disabled!");
-        //loadMachines();
     }
 }
 
 function stopUpdate() {
-    clearInterval(updateTimer);
+    window.clearInterval(updateTimer);
 }
