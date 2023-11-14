@@ -78,13 +78,13 @@ typeSupportHelpers.push(scannerType = {
           // then see what Child Equipment is in our place
           if (this.connectedToSmip) {
             logger.log(info, 'CONNECTED TO SMIP');
-            sendSmipQuery(smip.queries.getEquipmentsInPlace(config.app.placeId), this.getSensors.bind(this));
-            sendSmipQuery(smip.queries.getChildEquipmentsInPlace(config.app.placeId2), this.getNewParentPlaceEquipment.bind(this));
+            this.queryHandler(smip.queries.getEquipmentsInPlace(config.app.placeId), this.typeName, this.getSensors.bind(this));
+            this.queryHandler(smip.queries.getChildEquipmentsInPlace(config.app.placeId2), this.typeName, this.getNewParentPlaceEquipment.bind(this));
           }
           logger.log(trace, "Scanner pane html now: " + this.rootElement.innerHTML.trim());
         }
     },
-    loadMachines: function(smipQueryFunction, callBack) {
+    loadMachines: function(callBack) {
         var payload = {
           data: {
             equipments: [
@@ -97,7 +97,7 @@ typeSupportHelpers.push(scannerType = {
     },
     //  update: called when the main page says its time to update the contents of the page
     //    Implementation should fetching/render new data
-    update: function(smipQueryFunction) {
+    update: function() {
       if (this.ready) {
         logger.log(info, "Processing update request on example detail pane!");
         // Pause updates until this one is processed
@@ -137,7 +137,7 @@ typeSupportHelpers.push(scannerType = {
         let sensorArray = ["82840", "82849"];
         sensorArray.forEach((sensor) => {
             logger.log(info, 'sensor: ', sensor);
-            sendSmipQuery(mutations.updateEquipmentParent(sensor, config.app.placeId), this.finishedDemoReset.bind(this));
+            this.queryHandler(mutations.updateEquipmentParent(sensor, config.app.placeId), this.typeName, this.finishedDemoReset.bind(this));
         });
     },
 
@@ -224,7 +224,7 @@ typeSupportHelpers.push(scannerType = {
         newButton.addEventListener("click", () => {
           if (confirm(`Do you want to move the ${this.sensorMatchedToSMIP.displayName} to the ${place.equipment[0].displayName}?`)) {
             let newPlaceId = place.equipment[0].id;
-            sendSmipQuery(mutations.updateEquipmentParent(this.sensorMatchedToSMIP.id, newPlaceId), this.finishedMutation.bind(this));
+            this.queryHandler(mutations.updateEquipmentParent(this.sensorMatchedToSMIP.id, newPlaceId), this.typeName, this.finishedMutation.bind(this));
           }
         });
         // modalList.appendChild(newButton);
@@ -282,8 +282,7 @@ typeSupportHelpers.push(scannerType = {
 
       newButton.addEventListener("click", () => {
           let newPlaceId = this.locationMatchedToSMIP.id;
-          
-          sendSmipQuery(mutations.updateEquipmentParent(this.sensorMatchedToSMIP.id, newPlaceId), this.finishedMutation.bind(this));
+          this.queryHandler(mutations.updateEquipmentParent(this.sensorMatchedToSMIP.id, newPlaceId), this.typeName, this.finishedMutation.bind(this));
       });
       document.getElementById("selectNewParent").appendChild(newButton);
 

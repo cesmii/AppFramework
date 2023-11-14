@@ -53,6 +53,9 @@ function initDetailPanes(loaded, loader) {
 }
 
 function detailPaneReady() {
+    for (var i in typeSupportHelpers) {
+        typeSupportHelpers[i].queryHandler = sendSmipQuery;
+    }
     loadMachines();
     updateLoop();
 }
@@ -65,18 +68,17 @@ function loadMachines() {
         config.user.password && config.user.password != "" &&
         config.user.role && config.user.role != "") {
             for (var i in typeSupportHelpers) {
-                typeSupportHelpers[i].loadMachines(sendSmipQuery, showMachines);
+                typeSupportHelpers[i].loadMachines(showMachines);
             }
         }
     else {
         stopSpinner("loadMachines");
-        var discoveredMachines = [];
         toggleElement("settings", "block");
         stopUpdate();
     }
 }
 
-async function sendSmipQuery(theQuery, callBack) {  //TODO: this method needs to send typeName to callBack
+async function sendSmipQuery(theQuery, typeName, callBack) {  //TODO: this method needs to send typeName to callBack
     if (!currentBearerToken) {
         currentBearerToken = await smip.getBearerToken();
     }
@@ -122,6 +124,7 @@ async function sendSmipQuery(theQuery, callBack) {  //TODO: this method needs to
 }
 
 function showMachines(payload, updatingTypeName) {
+    console.log("at showMachines with typename in this: " + this.typeName);
     if (payload && payload.data && payload.data.equipments && payload.data.equipments.length != 0) {
         var discoveredMachines = [];
         payload.data.equipments.forEach (function(item, index, arr) {
@@ -147,8 +150,11 @@ function showMachines(payload, updatingTypeName) {
             }
         });
         //Update the details pane if present
-        if (discoveredMachines.length > 0 && currentDetailPane)
-            currentDetailPane.update();
+        if (discoveredMachines.length > 0 && currentDetailPane) {
+            if (currentDetailPane.typeName == updatingTypeName) {
+                currentDetailPane.update();
+            }
+        }
     } else {
         logger.log(info, "Empty payload for equipments query. Nothing to populate.");
         showToast("Warning!", "No compatible machine instances found on the SMIP instance. Please add equipment instances that match the SM Profile dependency.");    
@@ -193,7 +199,6 @@ function machineClicked(event) {
         if (typeSupportHelpers[i].typeName == widget.typeName) {
             currentDetailPane = typeSupportHelpers[i];
             currentDetailPane.instanceId = widget.instanceId;
-            currentDetailPane.queryHandler = sendSmipQuery;
             currentDetailPane.create("details");
         }
     };
@@ -377,7 +382,7 @@ function getCookie(name) {
 }
 
 function updateLoop() {
-    if (config.app.logLevel != "info") {
+    if (config.app.logLevel != "trace") {
         updateTimer = setInterval(function () { 
             loadMachines();
         }, updateRate);

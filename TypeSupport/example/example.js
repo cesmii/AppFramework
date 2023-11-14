@@ -28,7 +28,7 @@ typeSupportHelpers.push(exampleType = {
     },
     //  loadMachines: called when the main page says its time to load a list of machines
     //    Implementation should fetch a list of machines of the type it supports
-    loadMachines: function(smipQueryFunction, callBack) {
+    loadMachines: function(callBack) {
       var payload = {
         data: {
           equipments: [
@@ -42,9 +42,9 @@ typeSupportHelpers.push(exampleType = {
     },
     //  update: called when the main page says its time to update the contents of the page
     //    Implementation should fetch/render new data
-    update: function(smipQueryFunction) {
+    update: function() {
       if (this.ready) {
-        logger.log(info, "Processing update request on example detail pane!");
+        logger.log(warn, "Processing update request on example detail pane!");
         // Pause updates until this one is processed
         this.ready = false;
         document.getElementById("divHello").innerHTML = this.helloHTML.replace("##", this.instanceId) + "<br><br>This pane has been updated " + this.getNextNumber() + " times...";

@@ -1,16 +1,7 @@
 const typeSupport = {
     machineTypes: {},
-
-    //Helpers
-    getResourcePath: function(searchType, resourceKind) {
-        for (var key in this.machineTypes) {
-            if (key == searchType)
-                return "TypeSupport/" + searchType + "/" + this.machineTypes[key][resourceKind];
-        };
-    },
-
     //Called by the main page code when a detail pane is needed
-    //  Tries to the appropriate detailpane resources for a given type and loads them into the DOM
+    //  Tries to find the appropriate detailpane resources for a given type and loads them into the DOM
     loadDetailPaneForType: function(typeName, callBack) {
         logger.log(info, "Creating new detail pane for: " + typeName);
         //Load script
@@ -43,6 +34,13 @@ const typeSupport = {
     getIconForType:function(typeName) {
         var iconPath = this.getResourcePath(typeName, "icon");
         return iconPath;
+    },
+    //Helpers
+    getResourcePath: function(searchType, resourceKind) {
+        for (var key in this.machineTypes) {
+            if (key == searchType)
+                return "TypeSupport/" + searchType + "/" + this.machineTypes[key][resourceKind];
+        };
     },
     cacheBust:function() {
         return "?" + (Math.round(Date.now())).toString(36);
