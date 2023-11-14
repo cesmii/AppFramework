@@ -218,7 +218,7 @@ appFramework = {
         if (source)
             source = " for " + source;
         logger.log(trace, "spinner stopped" + source);
-        document.getElementById("btnRefresh").innerHTML = "Refresh";
+        document.getElementById("btnRefresh").innerHTML = "<i class=\"fas fa-sync-alt\"></i>";
     },
     
     toggleElement: function(id, toggleVal, responsiveOnly) {

@@ -2,6 +2,7 @@
     <head>
         <title>CESMII App Framework</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+        <meta http-equiv="pragma" content="no-cache">
         <link rel="shortcut icon" href="./favicon.ico">
         <link rel="manifest" href="./manifest.json">
         <link rel="apple-touch-icon" sizes="57x57" href="apple-icon/57x57.png">
@@ -19,6 +20,7 @@
         <link rel="icon" type="image/png" sizes="96x96" href="icons/favicon-96x96.png">
         <link rel="stylesheet" href="style.css" type="text/css">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Encode+Sans+Condensed:300,700">
+        <link href="https://use.fontawesome.com/releases/v5.15.0/css/all.css" rel="stylesheet">
         <link rel="stylesheet" href="widgets.css" type="text/css">
         <link rel="stylesheet" href="toast.css" type="text/css">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" integrity="sha512-ElRFoEQdI5Ht6kZvyzXhYG9NqjtkmlkfYk0wr6wHxU9JEHakS7UJZNeml5ALk+8IKlU6jDgMabC3vkumRokgJA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -37,8 +39,8 @@
         <div class="titles">
             <div class="toptitle">
                 <img id="imgLogo" src="cesmii.png" style="height:40px" onerror="null;this.src='cesmii.png';logger.log('warn', 'Failed to load custom logo, reverting to defatult!')">
-                <button onclick="appFramework.loadMachines()" id="btnRefresh" style="float:right;">Refresh</button>
-                <button onclick="appFramework.toggleElement('settings')" id="btnConfig" style="float:right;margin-right:5px;">Settings</button>
+                <button onclick="appFramework.loadMachines()" id="btnRefresh" style="float:right;"><i class="fas fa-sync-alt"></i></button>
+                <button onclick="appFramework.toggleElement('settings')" id="btnConfig" style="float:right;margin-right:5px;"><i class="fas fa-cogs"></i></button>
             </div>
             <h1 id="machineName">Loading...</h1>
             <!-- toast alerts -->
