@@ -3,11 +3,11 @@
 config = {
     app: {  //These are global app settings that the user cannot change
         "title": "CESMII Machine View",
-        "logo": "customlogo.png",
-        "style": "custom.css",
-        "updateRate": 5000,         //high update rates will have global performance impact -- this interface is not intended for high speed data!
-        "machineTypes": ["example"],   //to support a different type, you must load or create TypeSupport resources
-        "logLevel": "error"       //levels are: error, warn, info
+        "logo": "customlogo.png",   //If you have a custom logo, you can reference it here. Otherwise, leave this empty.
+        "style": "custom.css",      //If you have a custom css, you can reference it here. Otherwise, leave this empty.
+        "updateRate": 5000,         //High update rates will have global performance impact -- this interface is not intended for high speed data!
+        "machineTypes": ["example"],   //To support a different type, you must load or create TypeSupport resources
+        "logLevel": "error"       //Levels are: error, warn, info, trace
     }, 
     user: { //These are defaults that the user can over-ride. Get them from your SMIP instance.
         "smipUrl": "https://demo.cesmii.net/graphql",

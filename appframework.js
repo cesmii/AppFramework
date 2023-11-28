@@ -13,6 +13,7 @@ appFramework = {
     errorHandled: false,
     currentBearerToken: null,
     currentDetailPane: null,
+    detailPanesLoaded: 0,
 
     activate: function() {
         this.loadConfig();
@@ -21,11 +22,22 @@ appFramework = {
             logger.log(warn, "Activating app with verbose logging.");
         }
         
-        logger.log(info, "Conifgured to support types: ", JSON.stringify(config.app.machineTypes));
+        logger.log(info, "Configured to support types: ", JSON.stringify(config.app.machineTypes));
         for (var i=0; i<config.app.machineTypes.length; i++) {
-            include("TypeSupport/" + config.app.machineTypes[i] + "/type.js", () => {
-                this.initDetailPanes();
-            });
+            include("TypeSupport/" + config.app.machineTypes[i] + "/type.js", 
+                //Helper loaded successfully
+                () => {
+                    this.detailPanesLoaded++;
+                    if (this.detailPanesLoaded == config.app.machineTypes.length) {
+                        for (var i in config.app.machineTypes) {
+                            typeSupport.loadDetailPaneForType(config.app.machineTypes[i], this.detailPaneReady.bind(this));
+                        };
+                    }
+                },
+                //Helper failed to load
+                (error) => {
+                    alert("Could not load required Type support helper. The necessary Extension may not be installed on the server. See the console log for more details.");
+                });
         }
     
         document.title = config.app.title;
@@ -37,16 +49,6 @@ appFramework = {
             this.updateRate = config.app.updateRate;
         else
             logger.log(error, "Invalid update rate in config, default will be used!");
-    },
-    
-    detailPanesLoaded: 0,
-    initDetailPanes: function() {
-        this.detailPanesLoaded++;
-        if (this.detailPanesLoaded == config.app.machineTypes.length) {
-            for (var i in config.app.machineTypes) {
-                typeSupport.loadDetailPaneForType(config.app.machineTypes[i], this.detailPaneReady.bind(this));
-            };
-        }
     },
     
     detailPanesReady: 0,
@@ -86,7 +88,7 @@ appFramework = {
         if (!this.currentBearerToken) {
             this.currentBearerToken = await smip.getBearerToken();
         }
-        if (config.app.logLevel == "info") {
+        if (config.app.logLevel == info || trace) {
             //Just let errors happen in debug mode
             callBack(await smip.performGraphQLRequest(theQuery, config.user.smipUrl, this.currentBearerToken), theQuery, this);
         } else {
@@ -396,30 +398,63 @@ appFramework = {
 }
 
 //global function to simplify bootstrapping resources
-const include = (function(source, callBack) {
-    if (!source || source == "") {
-        logger.log("warn", "Could not include an empty source");
-        return false;
-    }
+const include = (function(source, successCallBack, errorCallBack) {
+    //enclosed (private) helper
     cacheBust = function() {
         return "?" + (Math.round(Date.now())).toString(36);
     };
 
+    if (!source || source == "") {
+        logger.log("warn", "Could not Include an empty source.");
+        return false;
+    }
+    var args;
+    if (typeof source == 'object') {
+        args = source;
+        if (args["href"])
+            source = args.href;
+        if (args["HREF"])
+            source = args.HREF;
+        if (args["src"])
+            source = args.src;
+        if (args["SRC"])
+            source = args.SRC;
+    }
+    source = source + cacheBust();
+
     if (source.indexOf(".css") != -1) {
+        //Inject CSS links
         var css = document.createElement("link");
         css.setAttribute("rel", "stylesheet");
-        css.setAttribute("href", source + cacheBust());
-        document.head.appendChild(css);    
+        if (args) {     //Support arguments if sent
+            for (let key in args) {
+                css[key] = args[key];
+            }
+        }
+        css.setAttribute("href", source);
+        document.head.appendChild(css);
     } else {
+        //Inject Script sources
         var js = document.createElement("script");
         js.type = "text/javascript";
-        js.src = source + cacheBust();
+        if (args) {     //Support arguments if sent
+            for (let key in args) {
+                js[key] = args[key];
+            }
+        }
+        js.src = source;
+        js.onerror = (error) => {
+            logger.log("error", "Failed to Include script: " + source);
+            if (errorCallBack) {
+                errorCallBack(error);
+            }
+        };
         document.body.appendChild(js);
-        if (callBack) {
+        if (successCallBack) {
             js.addEventListener('load', () => {
-                callBack();
+                successCallBack();
             });
-        }    
+        }
     }
     return true;
 })
