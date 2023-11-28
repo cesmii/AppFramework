@@ -5,7 +5,8 @@ defaults = {
         "title": "CESMII Machine View",
         "logo": "",
         "style": "",
-        "machineType": "example",
+        "updateRate": 5000,
+        "machineTypes": ["example"],
         "logLevel": "error"
     }, 
     user: {
