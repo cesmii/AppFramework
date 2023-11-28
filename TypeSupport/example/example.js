@@ -11,12 +11,15 @@ typeSupportHelpers.push(exampleType = {
     count:0,
     helloHTML:"<h2>Hello world!</h2>This is an example detail pane, loaded for a type definition called <code>example</code>, and an instance with id <code>##</code>.<br>Within this pane, you can do anything you need to with Javascript, CSS and HTML5 to create a user-interface for a given type!",
     
-    /* IDetailPane Interface Required Methods */
-    //  create: called when the main page needs this kind of detail pane
-    //    Implementation should create necessary HTML elements on the page and kick-off fetching/rendering data
+   /**
+   * This method is called when the type support handler is first initialized.
+   * The implementation should load any additional scripts or resources it needs, as well as setting up the initial UI.
+   * @rootElement {htmlElement} informs the type support handler's UI what DOM element they can attach elements to
+   */
     create: function(rootElement) {
-      logger.log(info, "Activating example detail pane!");
-      if (this.validateRootElement(rootElement)) {
+      logger.info("Activating example detail pane with root element: " + rootElement);
+      this.rootElement = appFramework.validateRootElement(rootElement);
+      if (this.rootElement) {
         /*add elements to DOM*/
         var myDiv = document.createElement("div");
         myDiv.id = "divHello";
@@ -24,11 +27,15 @@ typeSupportHelpers.push(exampleType = {
         myDiv.setAttribute("class", "example-hello");
         this.rootElement.appendChild(myDiv);
 
-        logger.log(trace, "Detail pane html now: " + this.rootElement.innerHTML.trim());
+        logger.trace("Detail pane html now: " + this.rootElement.innerHTML.trim());
       }
     },
-    //  loadMachines: called when the main page says its time to load a list of machines
-    //    Implementation should fetch a list of machines of the type it supports
+
+   /**
+   * This method is called when the app framework wants to load a list of machines
+   * Implementation should fetch a list of machines of the type it supports.
+   * @callBack {function} Callback assigned by the app framework to invoke when loading is complete
+   */
     loadMachines: function(callBack) {
       var payload = {
         data: {
@@ -41,44 +48,31 @@ typeSupportHelpers.push(exampleType = {
       callBack(payload, this.typeName);
       appFramework.stopSpinner("inner loadMachines");  //Usually the main app handles this, but the example case is hard-coded so doesn't callback the main app.
     },
-    //  update: called when the main page says its time to update the contents of the page
-    //    Implementation should fetch/render new data
+
+   /**
+   * This method is called when the app framework wants to update the contents of the page
+   * Implementation should fetch/render new data
+   */
     update: function() {
       if (this.ready) {
-        logger.log(info, "Processing update request on example detail pane!");
+        logger.info("Processing update request on example detail pane!");
         // Pause updates until this one is processed
         this.ready = false;
         document.getElementById("divHello").innerHTML = this.helloHTML.replace("##", this.instanceId) + "<br><br>This pane has been updated " + this.getNextNumber() + " times...";
         this.ready = true;
       } else {
-        logger.log(info, "Ignoring update request since not ready");
+        logger.info("Ignoring update request since not ready");
       }
     },
-    //  destroy: called when the user navigates away from the element that required this detail pane
-    //    Implementation should removed any HTML elements, event handlers and timers
+
+    /**
+    * This method is called when the user navigates away from the element that required this detail pane.
+    * Implementation should remove any HTML elements, event handlers and timers.
+    */
     destroy: function() {
         this.rootElement.removeChild(document.getElementById("divHello"));
         this.count = 0;
-        logger.log(info, "Destroyed example detail pane!");
-    },
-    // helper to ensure this pane has a place to attach
-    validateRootElement: function(rootElement) {
-        if (rootElement)
-          this.rootElement = rootElement;
-        if (!this.rootElement || document.getElementById(rootElement) == null) {
-          logger.log(info, "Cannot create detail pane without a root element!");
-          return false;
-        } else {
-          if (this.rootElement.nodeName != "DIV") {
-            this.rootElement = document.getElementById(rootElement);
-            if (this.rootElement.nodeName != "DIV") {
-              logger.log(info, "Root element for detail was not a DIV!");
-              return false;
-            } else {
-              return true;
-            }
-          }
-        }
+        logger.info("Destroyed example detail pane!");
     },
 
     /* Private implementation-specific methods */

@@ -37,9 +37,10 @@ typeSupportHelpers.push(scannerType = {
     //  create: called when the main page needs this kind of detail pane
     //    Implementation should create necessary HTML elements on the page and kick-off fetching/rendering data
     create: function(rootElement) {
-        logger.log(info, "Activating scanner detail pane!");
+        logger.info("Activating scanner detail pane!");
         
-        if (this.validateRootElement(rootElement)) {
+        this.rootElement = appFramework.validateRootElement(rootElement);
+        if (this.rootElement) {  
           /*add elements to DOM*/
           var readerDiv = document.createElement("div");
           readerDiv.id = "divReader";
@@ -62,18 +63,18 @@ typeSupportHelpers.push(scannerType = {
   
           let resetSensorsButton = document.getElementById("reset-sensors");
           resetSensorsButton.addEventListener("click", () => {
-            logger.log(info, "clicked reset sensors");
+            logger.info("clicked reset sensors");
             this.resetSensors();
           });
   
           // If we are connected to the SMIP, go ahead see what sensors are in the SMIP instance
           // then see what Child Equipment is in our place
           if (this.connectedToSmip) {
-            logger.log(info, 'CONNECTED TO SMIP');
+            logger.info('CONNECTED TO SMIP');
             this.queryHandler(smip.queries.getEquipmentsInPlace(config.app.placeId), this.getSensors.bind(this));
             this.queryHandler(smip.queries.getChildEquipmentsInPlace(config.app.placeId2), this.getNewParentPlaceEquipment.bind(this));
           }
-          logger.log(trace, "Scanner pane html now: " + this.rootElement.innerHTML.trim());
+          logger.trace("Scanner pane html now: " + this.rootElement.innerHTML.trim());
         }
     },
     loadMachines: function(callBack) {
@@ -91,51 +92,32 @@ typeSupportHelpers.push(scannerType = {
     //    Implementation should fetching/render new data
     update: function() {
       if (this.ready) {
-        logger.log(info, "Processing update request on example detail pane!");
+        logger.info("Processing update request on example detail pane!");
         // Pause updates until this one is processed
         this.ready = true;
       } else {
-        logger.log(info, "Ignoring update request since not ready");
+        logger.info("Ignoring update request since not ready");
       }
     },
     //  destroy: called when the user navigates away from the element that required this detail pane
     //    Implementation should removed any HTML elements, event handlers and timers
     destroy: function() {
         this.rootElement.removeChild(document.getElementById("divReader"));
-        logger.log(info, "Destroyed scanner detail pane!");
-    },
-    // helper to ensure this pane has a place to attach
-    validateRootElement: function(rootElement) {
-        if (rootElement)
-          this.rootElement = rootElement;
-        if (!this.rootElement || document.getElementById(rootElement) == null) {
-          logger.log(info, "Cannot create detail pane without a root element!");
-          return false;
-        } else {
-          if (this.rootElement.nodeName != "DIV") {
-            this.rootElement = document.getElementById(rootElement);
-            if (this.rootElement.nodeName != "DIV") {
-              logger.log(info, "Root element for detail was not a DIV!");
-              return false;
-            } else {
-              return true;
-            }
-          }
-        }
+        logger.info("Destroyed scanner detail pane!");
     },
 
     /* Private implementation-specific methods */
     resetSensors: function() {
         let sensorArray = ["82840", "82849"];
         sensorArray.forEach((sensor) => {
-            logger.log(info, 'sensor: ', sensor);
+            logger.info('sensor: ', sensor);
             this.queryHandler(mutations.updateEquipmentParent(sensor, config.app.placeId), this.finishedDemoReset.bind(this));
         });
     },
 
     finishedDemoReset: function(payload, query) {
-      logger.log(trace, "payload: ", payload);
-      logger.log(trace, "query: ", query);
+      logger.trace("payload: ", payload);
+      logger.trace("query: ", query);
 
       this.toggleVisibility("moveSensorToLocation", "hide");
       this.toggleVisibility("selectNewParent", "hide");
@@ -144,8 +126,8 @@ typeSupportHelpers.push(scannerType = {
     },
 
     finishedMutation: function(payload, query) {
-      logger.log(info, 'inside finishedMutation ####');
-      logger.log(trace, 'payload finishedMutation', payload);
+      logger.info('inside finishedMutation ####');
+      logger.trace('payload finishedMutation', payload);
 
       this.toggleVisibility("moveSensorToLocation", "hide");
       this.toggleVisibility("selectNewParent", "hide");
@@ -155,12 +137,12 @@ typeSupportHelpers.push(scannerType = {
 
     renderQrScanner: function(equipment) {
       if (equipment === "sensor") {
-        logger.log(info, 'RENDERING SENSOR QR SCANNER');
+        logger.info('RENDERING SENSOR QR SCANNER');
         // Render QR Scanner
         this.html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
         this.html5QrcodeScanner.render(this.onScanSuccessSensor, this.onScanError);
       } else if (equipment === "machine") {
-        logger.log(info, 'RENDERING MACHINE QR SCANNER');
+        logger.info('RENDERING MACHINE QR SCANNER');
         // Render QR Scanner
         this.html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
         this.html5QrcodeScanner.render(this.onScanSuccessMachine, this.onScanError);        
@@ -168,29 +150,29 @@ typeSupportHelpers.push(scannerType = {
     },
 
     getSensors: function(payload, query) {
-      logger.log(info, 'inside getSensors ####');
-      logger.log(trace, 'payload getSensors', payload);
+      logger.info('inside getSensors ####');
+      logger.trace('payload getSensors', payload);
         let equipmentArray = payload.data.place.equipment;
 
         equipmentArray.forEach((equipment) => {
-            logger.log(info, 'equipment: ', equipment);
-            logger.log(info, 'equipment.attributes: ', equipment.attributes);
+            logger.info('equipment: ', equipment);
+            logger.info('equipment.attributes: ', equipment.attributes);
             let macidObject = (equipment.attributes.find((attr) => attr.displayName === 'MACID' && attr.stringValue));
-            logger.log(info, 'macidObject: ', macidObject);
+            logger.info('macidObject: ', macidObject);
 
             if (macidObject) {
               // add the id so we can push this id to a location later
               macidObject.id = equipment.id;
               macidObject.displayName = equipment.displayName;
               this.foundSensorData.push(macidObject);
-              logger.log(info, 'this.foundSensorData: ', this.foundSensorData);
+              logger.info('this.foundSensorData: ', this.foundSensorData);
             };
         });
     },
     // get the parent place equipment and add it to the modal
     getNewParentPlaceEquipment: function(payload, query) {
-      logger.log(info, 'inside getNewParentEquipment ####');
-      logger.log(trace, 'payload getNewParentEquipment', payload);
+      logger.info('inside getNewParentEquipment ####');
+      logger.trace('payload getNewParentEquipment', payload);
       // const modal = document.querySelector("#modal");
       // const openModal = document.querySelector(".open-button");
       // const closeModal = document.querySelector(".close-button");
@@ -203,7 +185,7 @@ typeSupportHelpers.push(scannerType = {
       let parentPlaceArray = payload.data.places;
 
       parentPlaceArray.forEach((place) => {
-        logger.log(trace, 'place.equipment: ', place.equipment);
+        logger.trace('place.equipment: ', place.equipment);
         // add the parent places to a global so we can display them on screen to choose
         this.foundParentPlaceEquipment.push(place.equipment[0]);
 
@@ -237,12 +219,12 @@ typeSupportHelpers.push(scannerType = {
     },
 
     getFoundSensorData: function() {
-      logger.log(trace, 'this.foundSensorData: ', this.foundSensorData)
+      logger.trace('this.foundSensorData: ', this.foundSensorData)
       return this.foundSensorData;
     },
 
     compareScanToSMIP: function(decodedText) {
-      logger.log(info, `compareScanToSMIPScan result: ${decodedText}`);
+      logger.info(`compareScanToSMIPScan result: ${decodedText}`);
     },
     toggleVisibility: function(elementId, state) {
       if (state === 'hide') {
@@ -252,14 +234,14 @@ typeSupportHelpers.push(scannerType = {
       }
     },
     onScanSuccessMachine: function(decodedText, decodedResult) {
-      logger.log(trace, `Scan result: ${decodedText}`, decodedResult);
+      logger.trace(`Scan result: ${decodedText}`, decodedResult);
       // Handle on success condition with the decoded text or result.
       this.html5QrcodeScanner.clear();
 
       document.getElementById('instructionScan').textContent = config.app.instructionMoveSensor;
 
       let matchedSMIPtoScan = (this.foundParentPlaceEquipment.find((attr) => attr.id === decodedText));
-      logger.log(trace, "matchedSMIPtoScan: ", matchedSMIPtoScan);
+      logger.trace("matchedSMIPtoScan: ", matchedSMIPtoScan);
       this.locationMatchedToSMIP = matchedSMIPtoScan;
 
       document.getElementById('locationScanSuccess').textContent = `✅ ${this.locationMatchedToSMIP.displayName}successfully scanned.`;
@@ -281,13 +263,13 @@ typeSupportHelpers.push(scannerType = {
     },
     onScanSuccessSensor: function(decodedText, decodedResult) {
       // Handle on success condition with the decoded text or result.
-      logger.log(info, `Scan result: ${decodedText}`, decodedResult);
+      logger.info(`Scan result: ${decodedText}`, decodedResult);
 
       this.html5QrcodeScanner.clear();
 
       this.toggleVisibility("new-scan", "show");
 
-      logger.log(trace, 'this.foundSensorData: ', this.foundSensorData);
+      logger.trace('this.foundSensorData: ', this.foundSensorData);
       // document.getElementById("scaninput").value=decodedText;
 
       // use decodedText for SMIP call
@@ -296,7 +278,7 @@ typeSupportHelpers.push(scannerType = {
 
       let matchedSMIPtoScan = (this.foundSensorData.find((attr) => attr.stringValue === decodedText));
       // we matched the decodedText with a known new sensor
-      logger.log(trace, "matchedSMIPtoScan: ", matchedSMIPtoScan);
+      logger.trace("matchedSMIPtoScan: ", matchedSMIPtoScan);
       this.sensorMatchedToSMIP = matchedSMIPtoScan;
 
       // sensor scan success message
@@ -323,6 +305,6 @@ typeSupportHelpers.push(scannerType = {
     },
     onScanError: function(errorMessage) {
       // handle on error condition, with error message
-      // logger.log(info, 'errorMessage: ', errorMessage)
+      // logger.info('errorMessage: ', errorMessage)
     },
 });

@@ -19,10 +19,10 @@ appFramework = {
         this.loadConfig();
         logger.logLevel = logger.logLevels[config.app.logLevel];
         if (config.app.logLevel == "trace") {
-            logger.log(warn, "Activating app with verbose logging.");
+            logger.warn("Activating app with verbose logging.");
         }
         
-        logger.log(info, "Configured to support types: ", JSON.stringify(config.app.machineTypes));
+        logger.info("Configured to support types: ", JSON.stringify(config.app.machineTypes));
         for (var i=0; i<config.app.machineTypes.length; i++) {
             include("TypeSupport/" + config.app.machineTypes[i] + "/type.js", 
                 //Helper loaded successfully
@@ -48,7 +48,7 @@ appFramework = {
         if (config.app.updateRate && config.app.updateRate > 2000)
             this.updateRate = config.app.updateRate;
         else
-            logger.log(error, "Invalid update rate in config, default will be used!");
+            logger.error("Invalid update rate in config, default will be used!");
     },
     
     detailPanesReady: 0,
@@ -88,7 +88,7 @@ appFramework = {
         if (!this.currentBearerToken) {
             this.currentBearerToken = await smip.getBearerToken();
         }
-        if (config.app.logLevel == info || trace) {
+        if (config.app.logLevel == logger.info || logger.trace) {
             //Just let errors happen in debug mode
             callBack(await smip.performGraphQLRequest(theQuery, config.user.smipUrl, this.currentBearerToken), theQuery, this);
         } else {
@@ -98,13 +98,13 @@ appFramework = {
             }
             catch (ex) {
                 if (ex == 400 || ex == 401 || ex == 403) {
-                    logger.log(info, "Attempting bearer token refresh with SMIP.");
+                    logger.info("Attempting bearer token refresh with SMIP.");
                     try {
                         this.currentBearerToken = await smip.getBearerToken();
                         callBack(await smip.performGraphQLRequest(theQuery, config.user.smipUrl, this.currentBearerToken), theQuery, this);                        
                     }
                     catch (ex) {
-                        logger.log(error, "Authentication or bearer token refresh failure: " + JSON.stringify(ex));
+                        logger.error("Authentication or bearer token refresh failure: " + JSON.stringify(ex));
                         this.showToast("Error!", "Attempts to authenticate with the SMIP using configured credentials have failed. Check your settings and re-try.");
                         this.stopUpdate();
                         this.stopSpinner("sendSmipQuery");
@@ -112,11 +112,11 @@ appFramework = {
                 } else {
                     this.errorRetries++;
                     if (ex == 502) {
-                        logger.log(warn, "Proxy error - 502: " + ex);
+                        logger.warn("Proxy error - 502: " + ex);
                     } else {
-                        logger.log(warn, "Caught an error: " + ex);
-                        logger.log(warn, ex.message);
-                        logger.log(info, ex.stack);
+                        logger.warn("Caught an error: " + ex);
+                        logger.warn(ex.message);
+                        logger.info(ex.stack);
                     }
                 }
                 if (this.errorRetries > 3) {
@@ -149,17 +149,17 @@ appFramework = {
             //Delete widgets if equipment removed
             document.getElementById("machines").childNodes.forEach (function(item) {
                 if (item.typeName == updatingTypeName && discoveredMachines.indexOf(item.id) == -1) {
-                    logger.log(info, item.id + " was no longer found and is being removed");
+                    logger.info(item.id + " was no longer found and is being removed");
                     document.getElementById("machines").removeChild(item);
                     //TODO: If the deleted one was selected, we need to clean-up the details pane too
                 }
             });
         } else {
-            logger.log(info, "Empty payload for equipments query. Nothing to populate.");
+            logger.info("Empty payload for equipments query. Nothing to populate.");
             this.showToast("Warning!", "No compatible machine instances found on the SMIP instance. Please add equipment instances that match the SM Profile dependency.");    
         }
         //Update UI
-        logger.log(info, "Done updating");
+        logger.info("Done updating");
         if (this.firstDraw) {
             //Give detail pane's injected dependencies a second to load
             window.setTimeout(function () {
@@ -186,7 +186,7 @@ appFramework = {
         var widget = event.target || event.srcElement;
         widget = widget.widget;
         widget.select(document.getElementById("machines"));
-        logger.log(info, "Rendering details for " + JSON.stringify(widget));
+        logger.info("Rendering details for " + JSON.stringify(widget));
         document.getElementById("machineName").innerHTML = widget.displayName;
     
         if (this.currentDetailPane != null) {
@@ -202,6 +202,28 @@ appFramework = {
             }
         };
     },
+
+    validateRootElement: function(rootElement) {
+        if (rootElement) {
+            if (rootElement.nodeName == "DIV") {
+                return rootElement;
+            }
+        }
+        if (!rootElement || document.getElementById(rootElement) == null) {
+            logger.error("Cannot create detail pane without a root element!");
+            return false;
+        } else {
+            if (rootElement.nodeName != "DIV") {
+                rootElement = document.getElementById(rootElement);
+                if (rootElement.nodeName != "DIV") {
+                    logger.error("Root element for detail pane was not a DIV!");
+                    return false;
+                } else {
+                    return rootElement;
+                }
+            }
+        }
+    },
     
     showToast: function(title, message) {
         this.stopUpdate();
@@ -212,14 +234,14 @@ appFramework = {
     startSpinner: function(source) {
         if (source)
             source = " for " + source;
-        logger.log(trace, "spinner started" + source);
+        logger.trace("spinner started" + source);
         document.getElementById("btnRefresh").innerHTML = "<i class=\"fas fa-sync-alt fa-spin\"></i>";
     },
     
     stopSpinner: function(source) {
         if (source)
             source = " for " + source;
-        logger.log(trace, "spinner stopped" + source);
+        logger.trace("spinner stopped" + source);
         document.getElementById("btnRefresh").innerHTML = "<i class=\"fas fa-sync-alt\"></i>";
     },
     
@@ -315,7 +337,7 @@ appFramework = {
     },
     
     saveConfig: function () {
-        logger.log(info, "Saving Config");
+        logger.info("Saving Config");
         var form = document.getElementById("configForm").elements;
         config.user.smipUrl = form.smipurl.value;
         config.user.authenticator = form.authenticator.value;
@@ -345,7 +367,7 @@ appFramework = {
         this.toggleElement("toast", "none");
         this.toggleElement("settings", "none");
         this.setCookie("config", config.user, 90);
-        logger.log(info, "User config now: " + JSON.stringify(config.user));
+        logger.info("User config now: " + JSON.stringify(config.user));
     
         //Clear Machines
         this.stopUpdate();
@@ -369,7 +391,7 @@ appFramework = {
         var d = new Date();
         d.setTime(d.getTime() + (duration*24*60*60*1000));
         duration = d.toUTCString();
-        logger.log(info, "Saving cookie: " + name + ", value: " + JSON.stringify(value));
+        logger.info("Saving cookie: " + name + ", value: " + JSON.stringify(value));
         var cookie = [name, "=", JSON.stringify(value), "; expires=" + duration + "; SameSite=Strict;"].join("");
         document.cookie = cookie;
     },
@@ -377,7 +399,7 @@ appFramework = {
     getCookie: function (name) {
         var value = document.cookie.match(new RegExp(name + '=([^;]+)'));
         value && (value = JSON.parse(value[1]));
-        logger.log(info, "Got cookie: " + name + ", value: " + JSON.stringify(value));
+        logger.info("Got cookie: " + name + ", value: " + JSON.stringify(value));
         return value;
     },
     
@@ -388,7 +410,7 @@ appFramework = {
                 this.loadMachines();
             }.bind(this), this.updateRate);
         } else {
-            logger.log(info, "Verbose logging is on, update firing once -- loop disabled!");
+            logger.info("Verbose logging is on, update firing once -- loop disabled!");
         }
     },
     
@@ -405,7 +427,7 @@ const include = (function(source, successCallBack, errorCallBack) {
     };
 
     if (!source || source == "") {
-        logger.log("warn", "Could not Include an empty source.");
+        logger.warn("Could not Include an empty source.");
         return false;
     }
     var args;
@@ -444,7 +466,7 @@ const include = (function(source, successCallBack, errorCallBack) {
         }
         js.src = source;
         js.onerror = (error) => {
-            logger.log("error", "Failed to Include script: " + source);
+            logger.error("Failed to Include script: " + source);
             if (errorCallBack) {
                 errorCallBack(error);
             }

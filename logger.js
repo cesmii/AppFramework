@@ -7,28 +7,42 @@ logger.logLevels = {
     "info": 2,
     "trace": 1
 };
-const error = "error";
-const warn = "warn";
-const info = "info";
-const trace = "trace";
 
-logger.log = function() {
+logger.log = function(logLevel, arguments) {
     if (arguments) {
-        var messageLevel = "info";
+        var messageLevel = logLevel;
         var messageText = "";
-        for (let i = 0; i < arguments.length; i++) {
-            let argument = arguments[i];
-            if (argument && typeof argument === 'string') {
-                if (argument.toLowerCase() == "trace" || argument.toLowerCase() == "info" || argument.toLowerCase() == "warn" || argument.toLowerCase() == "error")
-                    messageLevel = argument;
-                else
-                    messageText += argument + " ";
-            } else {
-                messageText += JSON.stringify(argument);
-            }
-        };
+        if ( typeof arguments === "object") {
+            for (var i = 0; i < arguments.length; i++) {
+                messageText += arguments[i] + " ";
+            };    
+        } else {
+            messageText = arguments;
+        }
+        if (logger.logLevel == logger.logLevels.trace) {
+            var e = new Error();
+            var lastFunction = e.stack.split("\n")[2];
+            if (lastFunction)
+                messageText += "\n(" + lastFunction + ")"
+        }
         if (this.logLevels[messageLevel] >= this.logLevel) {
             console.log(messageLevel + ": " + messageText);
         }
     }
+}
+
+logger.trace = function() {
+    logger.log ("trace", arguments);
+}
+
+logger.info = function() {
+    logger.log ("info", arguments);
+}
+
+logger.warn = function() {
+    logger.log ("warn", arguments);
+}
+
+logger.error = function() {
+    logger.log ("error", arguments);
 }
