@@ -7,7 +7,7 @@ typeSupportHelpers.push(exampleType = {
     queryHandler: null,       //the SMIP query method assigned by the host page
 
     /* Private implementation-specific properties */
-    ready:true,
+    ready:false,
     count:0,
     helloHTML:"<h2>Hello world!</h2>This is an example detail pane, loaded for a type definition called <code>example</code>, and an instance with id <code>##</code>.<br>Within this pane, you can do anything you need to with Javascript, CSS and HTML5 to create a user-interface for a given type!",
     
@@ -28,6 +28,7 @@ typeSupportHelpers.push(exampleType = {
         this.rootElement.appendChild(myDiv);
 
         logger.trace("Detail pane html now: " + this.rootElement.innerHTML.trim());
+        this.ready = true;
       }
     },
 
@@ -70,9 +71,12 @@ typeSupportHelpers.push(exampleType = {
     * Implementation should remove any HTML elements, event handlers and timers.
     */
     destroy: function() {
-        this.rootElement.removeChild(document.getElementById("divHello"));
-        this.count = 0;
-        logger.info("Destroyed example detail pane!");
+      while (this.rootElement.firstChild) {
+        this.rootElement.removeChild(this.rootElement.lastChild);
+      }
+      this.count = 0;
+      this.ready = false;
+      logger.info("Destroyed example detail pane!");
     },
 
     /* Private implementation-specific methods */

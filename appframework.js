@@ -36,14 +36,15 @@ appFramework = {
                 },
                 //Helper failed to load
                 (error) => {
-                    alert("Could not load required Type support helper. The necessary Extension may not be installed on the server. See the console log for more details.");
+                    this.showToast("Error!", "Could not load required Type support helper. The necessary Extension may not be installed on the server. See the console log for more details.");
                 });
         }
     
         document.title = config.app.title;
         document.getElementById("machineName").innerHTML = config.app.title;
         document.getElementById("imgLogo").src = config.app.logo;
-        include(config.app.style);
+        if (config.app.style)
+            include(config.app.style);
         
         if (config.app.updateRate && config.app.updateRate > 2000)
             this.updateRate = config.app.updateRate;
@@ -55,7 +56,7 @@ appFramework = {
     detailPaneReady: function() {        
         this.detailPanesReady++;
         for (var i in typeSupportHelpers) {
-            typeSupportHelpers[i].queryHandler = this.sendSmipQuery;
+            typeSupportHelpers[i].queryHelper = this.smipQueryHelper;
         }
         this.loadMachines();
         if (this.detailPanesReady == config.app.machineTypes.length)
@@ -84,30 +85,32 @@ appFramework = {
         }
     },
     
-    sendSmipQuery: async function (theQuery, callBack) {  //TODO: this method needs to send typeName to callBack
+    smipQueryHelper: async function (theQuery, callBack) {
         if (!this.currentBearerToken) {
             this.currentBearerToken = await smip.getBearerToken();
         }
-        if (config.app.logLevel == logger.info || logger.trace) {
+        if (config.app.logLevel == logger.trace) {
             //Just let errors happen in debug mode
             callBack(await smip.performGraphQLRequest(theQuery, config.user.smipUrl, this.currentBearerToken), theQuery, this);
         } else {
             //Try to show some UI for errors if not in debug mode
             try {
-                callBack(await smip.performGraphQLRequest(theQuery, config.user.smipUrl, this.currentBearerToken), theQuery, this);
+                if (callBack && (typeof callBack === "function"))
+                    callBack(await smip.performGraphQLRequest(theQuery, config.user.smipUrl, this.currentBearerToken), theQuery, this);
             }
             catch (ex) {
                 if (ex == 400 || ex == 401 || ex == 403) {
                     logger.info("Attempting bearer token refresh with SMIP.");
                     try {
                         this.currentBearerToken = await smip.getBearerToken();
-                        callBack(await smip.performGraphQLRequest(theQuery, config.user.smipUrl, this.currentBearerToken), theQuery, this);                        
+                        if (callBack && (typeof callBack === "function"))
+                            callBack(await smip.performGraphQLRequest(theQuery, config.user.smipUrl, this.currentBearerToken), theQuery, this);                        
                     }
                     catch (ex) {
                         logger.error("Authentication or bearer token refresh failure: " + JSON.stringify(ex));
                         this.showToast("Error!", "Attempts to authenticate with the SMIP using configured credentials have failed. Check your settings and re-try.");
                         this.stopUpdate();
-                        this.stopSpinner("sendSmipQuery");
+                        this.stopSpinner("smipQueryHelper");
                     }
                 } else {
                     this.errorRetries++;
@@ -119,23 +122,26 @@ appFramework = {
                         logger.info(ex.stack);
                     }
                 }
-                if (this.errorRetries > 3) {
+                if (this.errorRetries > 3) {    //TODO: Add exponential back-off
                     this.errorRetries = 0;
-                    if (!this.errorHandled)
-                        alert ("An unexpected error occured accessing the SMIP!");
+                    if (!this.errorHandled) {
+                        this.showToast("Error!", "An unexpected error occured accessing the SMIP!");
+                    }
                     this.errorHandled = true;
                 }
             }
         }
     },
     
-    showMachines: function(payload, updatingTypeName) {
+    showMachines: function(payload, useTypeName) {
         if (payload && payload.data && payload.data.equipments && payload.data.equipments.length != 0) {
             var discoveredMachines = [];
             payload.data.equipments.forEach (function(item, index, arr) {
                 this.toggleElement("toast", "none");
                 machineId = "machine" + item.id;
                 discoveredMachines.push(machineId);
+                if (useTypeName && useTypeName != "" && typeof (useTypeName) !== "object")
+                    item.typeName = useTypeName;
                 var icon = typeSupport.getIconForType(item.typeName);
                 if (!document.getElementById(machineId)) {
                     //Create the widget
@@ -148,7 +154,7 @@ appFramework = {
             }.bind(this));
             //Delete widgets if equipment removed
             document.getElementById("machines").childNodes.forEach (function(item) {
-                if (item.typeName == updatingTypeName && discoveredMachines.indexOf(item.id) == -1) {
+                if (item.typeName == useTypeName && discoveredMachines.indexOf(item.id) == -1) {
                     logger.info(item.id + " was no longer found and is being removed");
                     document.getElementById("machines").removeChild(item);
                     //TODO: If the deleted one was selected, we need to clean-up the details pane too
@@ -191,16 +197,20 @@ appFramework = {
     
         if (this.currentDetailPane != null) {
             this.currentDetailPane.destroy();
+            this.currentDetailPane = null;
             //TODO: also remove scripts and css from page?
         }
     
         for (var i in typeSupportHelpers) {
-            if (typeSupportHelpers[i].typeName == widget.typeName) {
+            logger.trace("Checking if detail pane " + typeSupportHelpers[i].typeName + " is for " + widget.typeName);
+            if (typeSupportHelpers[i].typeName.toLowerCase() == widget.typeName.toLowerCase()) {
                 this.currentDetailPane = typeSupportHelpers[i];
                 this.currentDetailPane.instanceId = widget.instanceId;
                 this.currentDetailPane.create("details");
             }
         };
+        if (this.currentDetailPane)
+            logger.trace("The current detail pane is now: " + this.currentDetailPane.typeName);
     },
 
     validateRootElement: function(rootElement) {
@@ -372,7 +382,11 @@ appFramework = {
         //Clear Machines
         this.stopUpdate();
         if (this.currentDetailPane) {
-            this.currentDetailPane.destroy();
+            try {
+                this.currentDetailPane.destroy();
+            } catch (e) {
+                logger.warn("Detail pane threw an error during destroy: " + e);
+            }
             this.currentDetailPane = null;
         }
         document.getElementById("machines").childNodes.forEach (function(node, index, arr) {
@@ -421,6 +435,7 @@ appFramework = {
 
 //global function to simplify bootstrapping resources
 const include = (function(source, successCallBack, errorCallBack) {
+    logger.trace("Including source: " + source);
     //enclosed (private) helper
     cacheBust = function() {
         return "?" + (Math.round(Date.now())).toString(36);

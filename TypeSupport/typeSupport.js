@@ -32,6 +32,7 @@ const typeSupport = {
         this.readyCallback();
     },
     getIconForType: function(typeName) {
+        logger.trace("getting icon for type: " + typeName);
         var iconPath = this.getResourcePath(typeName, "icon");
         return iconPath;
     },

@@ -71,8 +71,8 @@ typeSupportHelpers.push(scannerType = {
           // then see what Child Equipment is in our place
           if (this.connectedToSmip) {
             logger.info('CONNECTED TO SMIP');
-            this.queryHandler(smip.queries.getEquipmentsInPlace(config.app.placeId), this.getSensors.bind(this));
-            this.queryHandler(smip.queries.getChildEquipmentsInPlace(config.app.placeId2), this.getNewParentPlaceEquipment.bind(this));
+            this.queryHelper(smip.queries.getEquipmentsInPlace(config.app.placeId), this.getSensors.bind(this));
+            this.queryHelper(smip.queries.getChildEquipmentsInPlace(config.app.placeId2), this.getNewParentPlaceEquipment.bind(this));
           }
           logger.trace("Scanner pane html now: " + this.rootElement.innerHTML.trim());
         }
@@ -102,8 +102,10 @@ typeSupportHelpers.push(scannerType = {
     //  destroy: called when the user navigates away from the element that required this detail pane
     //    Implementation should removed any HTML elements, event handlers and timers
     destroy: function() {
-        this.rootElement.removeChild(document.getElementById("divReader"));
-        logger.info("Destroyed scanner detail pane!");
+      while (this.rootElement.firstChild) {
+        this.rootElement.removeChild(this.rootElement.lastChild);
+      }
+      logger.info("Destroyed scanner detail pane!");
     },
 
     /* Private implementation-specific methods */
@@ -111,7 +113,7 @@ typeSupportHelpers.push(scannerType = {
         let sensorArray = ["82840", "82849"];
         sensorArray.forEach((sensor) => {
             logger.info('sensor: ', sensor);
-            this.queryHandler(mutations.updateEquipmentParent(sensor, config.app.placeId), this.finishedDemoReset.bind(this));
+            this.queryHelper(mutations.updateEquipmentParent(sensor, config.app.placeId), this.finishedDemoReset.bind(this));
         });
     },
 
@@ -198,7 +200,7 @@ typeSupportHelpers.push(scannerType = {
         newButton.addEventListener("click", () => {
           if (confirm(`Do you want to move the ${this.sensorMatchedToSMIP.displayName} to the ${place.equipment[0].displayName}?`)) {
             let newPlaceId = place.equipment[0].id;
-            this.queryHandler(mutations.updateEquipmentParent(this.sensorMatchedToSMIP.id, newPlaceId), this.finishedMutation.bind(this));
+            this.queryHelper(mutations.updateEquipmentParent(this.sensorMatchedToSMIP.id, newPlaceId), this.finishedMutation.bind(this));
           }
         });
         // modalList.appendChild(newButton);
@@ -256,7 +258,7 @@ typeSupportHelpers.push(scannerType = {
 
       newButton.addEventListener("click", () => {
           let newPlaceId = this.locationMatchedToSMIP.id;
-          this.queryHandler(mutations.updateEquipmentParent(this.sensorMatchedToSMIP.id, newPlaceId), this.finishedMutation.bind(this));
+          this.queryHelper(mutations.updateEquipmentParent(this.sensorMatchedToSMIP.id, newPlaceId), this.finishedMutation.bind(this));
       });
       document.getElementById("selectNewParent").appendChild(newButton);
 

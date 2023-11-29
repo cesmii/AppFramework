@@ -18,12 +18,12 @@ smip.queries = {
           `
       };
     },
-    getEquipments: function(typeId, parentId) {
+    getEquipmentsByTypeName: function(typeName, parentId) {
       //TODO: modify query with filter instead of having two almost identical queries
         if (parentId != null && parentId != "") {
           return {
             query: `{
-              equipments(filter: {typeName: {equalTo: "${typeId}"}, partOfId: {equalTo: "${parentId}"}}) { 
+              equipments(filter: {typeName: {equalTo: "${typeName}"}, partOfId: {equalTo: "${parentId}"}}) { 
                 displayName
                 typeName
                 id
@@ -33,7 +33,7 @@ smip.queries = {
         } else {
           return {
             query: `{
-                equipments(filter: {typeName: {equalTo: "${typeId}"}}) { 
+                equipments(filter: {typeName: {equalTo: "${typeName}"}}) { 
                   displayName
                   typeName
                   id
@@ -85,7 +85,7 @@ smip.queries = {
               }`
         };
     },
-    // query to find details of a piece of equipment give its id
+    // query to find details of a piece of equipment given its id
     getEquipmentById: function (id) {
       return {
         query: `{
@@ -93,6 +93,17 @@ smip.queries = {
             displayName
             typeName
             id
+          }
+        }`
+      };
+    },
+    // query to find details of a piece of equipment given its id
+    getAttributesForEquipmentById: function (id) {
+      return {
+        query: `{
+          attributes(filter: {partOfId: {equalTo: "${id}"}}) {
+            id
+            displayName
           }
         }`
       };
