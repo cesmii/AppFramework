@@ -435,7 +435,7 @@ appFramework = {
 
 //global function to simplify bootstrapping resources
 const include = (function(source, successCallBack, errorCallBack) {
-    logger.trace("Including source: " + source);
+    logger.trace("Including source: " + JSON.stringify(source));
     //enclosed (private) helper
     cacheBust = function() {
         return "?" + (Math.round(Date.now())).toString(36);

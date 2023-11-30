@@ -13,7 +13,7 @@ smip.queries = {
             id
             ts
             ${datatype}
-            }
+          }
         }
           `
       };
@@ -60,25 +60,25 @@ smip.queries = {
                       id
                       displayName
                       attributes {
-                      id
-                      displayName
-                    }
-                            childEquipment {
-                      id
-                      displayName
-                      attributes {
-                      id
-                      displayName
-                    }
-                           childEquipment {
-                      id
-                      displayName
-                      attributes {
-                      id
-                      displayName
-                    }
-                    }
-                    }
+                        id
+                        displayName
+                      }
+                      childEquipment {
+                        id
+                        displayName
+                        attributes {
+                          id
+                          displayName
+                        }
+                        childEquipment {
+                          id
+                          displayName
+                          attributes {
+                            id
+                            displayName
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -104,6 +104,7 @@ smip.queries = {
           attributes(filter: {partOfId: {equalTo: "${id}"}}) {
             id
             displayName
+            relativeName
           }
         }`
       };
