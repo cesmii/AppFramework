@@ -39,8 +39,8 @@ const typeSupport = {
     //Helpers
     getResourcePath: function(searchType, resourceKind) {
         for (var key in this.machineTypes) {
-            if (key == searchType)
-                return "TypeSupport/" + searchType + "/" + this.machineTypes[key][resourceKind];
+            if (key.toLowerCase() == searchType.toLowerCase())
+                return "TypeSupport/" + key + "/" + this.machineTypes[key][resourceKind];
         };
     }
 };
