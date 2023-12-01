@@ -27,8 +27,8 @@
    "purpose": "maskable"
   },
   {
-   "src": "icons\/android-icon-48x48.png",
-   "sizes": "48x48",
+   "src": "icons\/android-icon-72x72.png",
+   "sizes": "72x72",
    "purpose": "any"
   },
   {
