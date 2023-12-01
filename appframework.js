@@ -343,7 +343,7 @@ appFramework = {
         if (configFavorites && configFavorites.length > 0) {
             var opt = document.createElement("option");
             opt.value = -1;
-            opt.innerText = "New";
+            opt.innerText = "<new>";
             form.smipfavorite.appendChild(opt);
             document.getElementById("divFavorites").style.display = "block";
             for (var f=0;f<configFavorites.length;f++) {
