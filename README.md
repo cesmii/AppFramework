@@ -34,7 +34,7 @@ CESMII provides no guarantee that changes won't break extensions in the future. 
 
 You can make the framework have a unique identity without breaking the ability to `pull` changes in a few ways:
 
-- Add your own logos and styles: your config.js file can point to a logo and css file to use. If you call them custom.png and custom.css they will be ignored via `.gitignore`
+- Add your own logos and styles: your config.js file can point to a logo and css file to use. If you call them `custom.png` and `custom.css`, or place them in a folder called `config` at the root, they will be ignored via `.gitignore`
 
 - Modify the PWA through the manifest and `icons/` folder. Once you change these, you can tell git to ignore those changes:
 
