@@ -23,13 +23,13 @@ smip.performGraphQLRequest = async function performGraphQLRequest(query, endPoin
 }
 
 smip.getBearerToken = async function getBearerToken() {
-    logger.info("getBearerToken invoked!");
+    logger.trace("getBearerToken invoked!");
     if (config.user.authenticator && config.user.authenticator != "" &&
         config.user.username && config.user.username != "" &&
         config.user.password && config.user.password != "" &&
         config.user.role && config.user.role != "") {
             return new Promise(
-                async function (resolve, reject) {
+                async function (resolve) {
                     // Step 1: Request a challenge
                     var theQuery = {
                         query: `mutation { authenticationRequest(input:
@@ -41,7 +41,10 @@ smip.getBearerToken = async function getBearerToken() {
                     };
                     var authResponse = await smip.performGraphQLRequest(theQuery, config.user.smipUrl);
                     var challenge = authResponse.data.authenticationRequest.jwtRequest.challenge;
-        
+                    if (!challenge) {
+                        logger.error("Could not obtain auth challenge from SMIP: " + JSON.stringify(authResponse));
+                        resolve(false);
+                    }
                     // Step 2: Get token
                     var theQuery = {
                         query: `mutation { authenticationValidation(input:
@@ -51,10 +54,15 @@ smip.getBearerToken = async function getBearerToken() {
                         }`
                     };
                     var challengeResponse = await smip.performGraphQLRequest(theQuery, config.user.smipUrl);
-                    var newJwtToken = "Bearer " + challengeResponse.data.authenticationValidation.jwtClaim;
-                    logger.info("Successfully authenticated with SMIP");
-                    resolve(newJwtToken);
-        
+                    var newJwtToken = challengeResponse.data.authenticationValidation.jwtClaim;
+                    if (!newJwtToken) {
+                        logger.error("Could not authenticate with SMIP: " + JSON.stringify(challengeResponse));
+                        resolve(false);                        
+                    } else {
+                        var newJwtToken = "Bearer " + challengeResponse.data.authenticationValidation.jwtClaim;
+                        logger.info("Successfully authenticated with SMIP");
+                        resolve(newJwtToken);
+                    }
                     //TODO: Handle errors!
                 }
             );

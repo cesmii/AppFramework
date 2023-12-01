@@ -86,55 +86,69 @@ appFramework = {
     },
     
     smipQueryHelper: async function (theQuery, callBack) {
-        if (!this.currentBearerToken) {
-            this.currentBearerToken = await smip.getBearerToken();
+        /* Note: this function lends itself to the detail panes, changing its callback context. 
+        As a result "this" gets changed, so local members are referenced using the global name appFramework
+        */
+        if (!appFramework.currentBearerToken) {
+            appFramework.currentBearerToken = await smip.getBearerToken();
         }
         if (config.app.logLevel == logger.trace) {
             //Just let errors happen in debug mode
-            callBack(await smip.performGraphQLRequest(theQuery, config.user.smipUrl, this.currentBearerToken), theQuery, this);
+            if (!appFramework.currentBearerToken) {
+                throw new Error("SMIP authentication failed to return a usable bearer token!");
+            }
+            callBack(await smip.performGraphQLRequest(theQuery, config.user.smipUrl, appFramework.currentBearerToken), theQuery, this);
         } else {
             //Try to show some UI for errors if not in debug mode
-            try {
-                if (callBack && (typeof callBack === "function"))
-                    callBack(await smip.performGraphQLRequest(theQuery, config.user.smipUrl, this.currentBearerToken), theQuery, this);
-            }
-            catch (ex) {
-                if (ex == 400 || ex == 401 || ex == 403) {
-                    logger.info("Attempting bearer token refresh with SMIP.");
-                    try {
-                        this.currentBearerToken = await smip.getBearerToken();
-                        if (callBack && (typeof callBack === "function"))
-                            callBack(await smip.performGraphQLRequest(theQuery, config.user.smipUrl, this.currentBearerToken), theQuery, this);                        
-                    }
-                    catch (ex) {
-                        logger.error("Authentication or bearer token refresh failure: " + JSON.stringify(ex));
-                        this.showToast("Error!", "Attempts to authenticate with the SMIP using configured credentials have failed. Check your settings and re-try.");
-                        this.stopUpdate();
-                        this.stopSpinner("smipQueryHelper");
-                    }
-                } else {
-                    this.errorRetries++;
-                    if (ex == 502) {
-                        logger.warn("Proxy error - 502: " + ex);
-                    } else {
-                        logger.warn("Caught an error: " + ex);
-                        logger.warn(ex.message);
-                        logger.info(ex.stack);
-                    }
+            if (!appFramework.currentBearerToken) {
+                appFramework.showToast("Error!", "Attempts to authenticate with the SMIP using configured credentials have failed. Check your settings and re-try.");
+            } else {
+                try {
+                    if (callBack && (typeof callBack === "function"))
+                        callBack(await smip.performGraphQLRequest(theQuery, config.user.smipUrl, appFramework.currentBearerToken), theQuery, this);
                 }
-                if (this.errorRetries > 3) {    //TODO: Add exponential back-off
-                    this.errorRetries = 0;
-                    if (!this.errorHandled) {
-                        this.showToast("Error!", "An unexpected error occured accessing the SMIP!");
+                catch (ex) {
+                    if (ex == 400 || ex == 401 || ex == 403) {
+                        logger.info("Attempting bearer token refresh with SMIP.");
+                        try {
+                            appFramework.currentBearerToken = await smip.getBearerToken();
+                            if (callBack && (typeof callBack === "function"))
+                                callBack(await smip.performGraphQLRequest(theQuery, config.user.smipUrl, appFramework.currentBearerToken), theQuery, this);                        
+                        }
+                        catch (ex) {
+                            logger.error("Authentication or bearer token refresh failure: " + JSON.stringify(ex));
+                            appFramework.showToast("Error!", "Attempts to authenticate with the SMIP using configured credentials resulted in an error. Check your settings and re-try.");
+                            appFramework.stopUpdate();
+                            appFramework.stopSpinner("smipQueryHelper");
+                        }
+                    } else {
+                        appFramework.errorRetries++;
+                        if (ex == 502) {
+                            logger.warn("Proxy error - 502: " + ex);
+                        } else {
+                            logger.warn("Caught an error: " + ex);
+                            logger.warn(ex.message);
+                            logger.info(ex.stack);
+                        }
                     }
-                    this.errorHandled = true;
+                    if (appFramework.errorRetries > 3) {    //TODO: Add exponential back-off
+                        appFramework.errorRetries = 0;
+                        if (!appFramework.errorHandled) {
+                            appFramework.showToast("Error!", "An unexpected error occured accessing the SMIP!");
+                        }
+                        appFramework.errorHandled = true;
+                    }
                 }
             }
         }
     },
     
     showMachines: function(payload, useTypeName) {
-        if (payload && payload.data && payload.data.equipments && payload.data.equipments.length != 0) {
+        if (payload && payload.errors) {
+            logger.error("An error occurred loading machines from the SMIP: " + JSON.stringify(payload.errors));
+            this.showToast("SMIP Error", "Error querying equipment: " + payload.errors[0].message);
+        }
+        else if (payload && payload.data && payload.data.equipments && payload.data.equipments.length != 0) {
             var discoveredMachines = [];
             payload.data.equipments.forEach (function(item, index, arr) {
                 this.toggleElement("toast", "none");
@@ -277,6 +291,11 @@ appFramework = {
             })
         }
     },
+
+    showSettings: function() {
+        this.stopUpdate();
+        this.toggleElement('settings', true);
+    },
     
     selectFavorite: function() {
         var form = document.getElementById("configForm").elements;
@@ -324,7 +343,7 @@ appFramework = {
         if (configFavorites && configFavorites.length > 0) {
             var opt = document.createElement("option");
             opt.value = -1;
-            opt.innerText = "";
+            opt.innerText = "New";
             form.smipfavorite.appendChild(opt);
             document.getElementById("divFavorites").style.display = "block";
             for (var f=0;f<configFavorites.length;f++) {
