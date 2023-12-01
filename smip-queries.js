@@ -19,6 +19,7 @@ smip.queries = {
       };
     },
     getEquipmentsByTypeName: function(typeName, parentId) {
+      typeName = typeName.toLowerCase();
       //TODO: modify query with filter instead of having two almost identical queries
         if (parentId != null && parentId != "") {
           return {
