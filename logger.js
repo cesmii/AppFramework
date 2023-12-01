@@ -13,7 +13,13 @@ logger.log = function(logLevel, arguments) {
         var messageLevel = logLevel;
         var messageText = "";
         if ( typeof arguments === "object") {
-            messageText = JSON.stringify(arguments);    
+            for (let key in arguments) {
+                if (arguments.hasOwnProperty(key)) {
+                    messageText += arguments[key];
+                } else {
+                    messageText += JSON.stringify(arguments[key]);
+                }
+             }
         } else {
             messageText = arguments;
         }

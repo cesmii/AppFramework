@@ -21,7 +21,8 @@ class widgetFactory {
         newWidget.appendChild(widgetTitle);
         var widgetIcon = document.createElement("img");
         widgetIcon.src = this.icon;
-        widgetIcon.addEventListener("error", this.loadDefaultImage);
+        if (config.app.logLevel != "trace")
+            widgetIcon.addEventListener("error", this.loadDefaultImage);
         widgetIcon.height = 64;
         widgetIcon.width = 64;
         newWidget.appendChild(widgetIcon);
