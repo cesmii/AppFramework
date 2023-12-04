@@ -30,7 +30,21 @@ logger.log = function(logLevel, arguments) {
                 messageText += "\n(" + lastFunction + ")"
         }
         if (this.logLevels[messageLevel] >= this.logLevel) {
-            console.log(messageLevel + ": " + messageText);
+            switch(logLevel) {
+                case logLevels.info: {
+                    console.info(messageText);
+                    break;
+                } case logLevels.warn: {
+                    console.warn(messageText);
+                    break;
+                } case logLevels.error: {
+                    console.error(messageText);
+                    break;
+                } default: {
+                    console.log(messageText);
+                    break;
+                }
+            }
         }
     }
 }
