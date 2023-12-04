@@ -28,16 +28,19 @@ logger.log = function(logLevel, arguments) {
             var lastFunction = e.stack.split("\n")[2];
             if (lastFunction)
                 messageText += "\n(" + lastFunction + ")"
+            messageText = logLevel + ": " + messageText;
+            console.groupCollapsed(messageText);
+            console.trace();
         }
         if (this.logLevels[messageLevel] >= this.logLevel) {
             switch(logLevel) {
-                case logLevels.info: {
+                case "info": {
                     console.info(messageText);
                     break;
-                } case logLevels.warn: {
+                } case "warn": {
                     console.warn(messageText);
                     break;
-                } case logLevels.error: {
+                } case "error": {
                     console.error(messageText);
                     break;
                 } default: {
@@ -46,6 +49,8 @@ logger.log = function(logLevel, arguments) {
                 }
             }
         }
+        if (logger.logLevel == logger.logLevels.trace)
+            console.groupEnd();
     }
 }
 
