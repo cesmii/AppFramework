@@ -14,10 +14,10 @@ logger.log = function(logLevel, arguments) {
         var messageText = "";
         if ( typeof arguments === "object") {
             for (let key in arguments) {
-                if (arguments.hasOwnProperty(key)) {
-                    messageText += arguments[key];
-                } else {
+                if ( typeof arguments[key] === "object") {
                     messageText += JSON.stringify(arguments[key]);
+                } else {
+                    messageText += arguments[key];
                 }
              }
         } else {
