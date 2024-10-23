@@ -193,7 +193,7 @@ appFramework = {
     selectMachine: function(i, discoveredMachines) {
         for (var j=0; j<document.getElementById("machines").childNodes.length; j++) {
             var item=document.getElementById("machines").childNodes[j];
-            if (discoveredMachines.indexOf(item.id) != -1) {
+            if (discoveredMachines && discoveredMachines.indexOf(item.id) != -1) {
                 if (i == j) {
                     item.click();
                     break;

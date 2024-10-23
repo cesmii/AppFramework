@@ -3,3 +3,5 @@ config.js
 custom.css
 logo.png
 /custom
+TypeSupport/cncbasetype
+TypeSupport/cncmachinefoundationtype
