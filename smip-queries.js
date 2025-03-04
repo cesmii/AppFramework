@@ -159,3 +159,23 @@ smip.queries = {
       }
     },
 };
+
+smip.mutations = {
+    // mutation to update equipment parent
+    updateEquipmentParent: function(equipmentId, newPlaceId) {
+      return {
+        query: `mutation {
+          updateEquipment(input: { id: "${equipmentId}", patch: { partOfId: "${newPlaceId}" } }) {
+            place {
+              id
+              displayName
+              parentPlace {
+                id
+                displayName
+              }
+            }
+          }
+        }`
+      }
+    },
+};
