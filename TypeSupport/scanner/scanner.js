@@ -7,7 +7,33 @@ typeSupportHelpers.push(scannerType = {
     typeName: "scanner",  //the SMIP type this detail pane is responsible for
     rootElement: null,        //the HTML element to which this detail pane may append/destroy child nodes
     instanceId: null,         //the SMIP id of the selected object that requires this detail pane
-    queryHandler: null,       //the SMIP query method assigned by the host page
+    queryHelper: function(query, callback) {
+      logger.info("queryHelper called with", query);
+      
+      // Check if we have a queryHandler assigned
+      if (typeof this.queryHandler === 'function') {
+        // Use the queryHandler provided by the host page
+        logger.info("Using provided queryHandler");
+        return this.queryHandler(query, callback);
+      } else {
+        // No queryHandler available
+        logger.error("No queryHandler available. This component requires a SMIP query handler.");
+        
+        // Simulate a response with an error for the callback
+        if (typeof callback === 'function') {
+          const errorPayload = {
+            errors: [{
+              message: "No query handler available"
+            }]
+          };
+          
+          // Call the callback with our error payload
+          setTimeout(() => callback(errorPayload, query), 100);
+        }
+        
+        return null;
+      }
+    },
     /* Private implementation-specific properties */
     foundSensorData: [],
     foundParentPlaceEquipment: [],
@@ -17,21 +43,21 @@ typeSupportHelpers.push(scannerType = {
     ready:true,
     count:0,
     detailPaneHTML:`
-<div style=''>
-<!--<div><input type=text id='scaninput' style='font-size: 24px;margin-top: 11px;width: 500px;' /></div>-->
+      <div style=''>
+      <!--<div><input type=text id='scaninput' style='font-size: 24px;margin-top: 11px;width: 500px;' /></div>-->
 
-  <h4 id="instructionScan">#instructionScanSensor</h4>
-  <!--<button class='button open-button' type='submit'>Move to a Machine Area</button>-->
-  <div id="sensorScanSuccess"></div>
-  <div id="locationScanSuccess"></div>
-  <div id="moveSensorToLocation"></div>
-  <div id="selectNewParent"></div>
-  <div id="successMessage"></div>
-  <button id="new-scan" class='button' type='submit'>Scan Machine QR</button>
-  <button id="reset-sensors" class='button reset-button' type='submit'>Reset Sensors</button>
-</div>
-<div id='reader' style=''></div>
-    `,
+        <h4 id="instructionScan">#instructionScanSensor</h4>
+        <!--<button class='button open-button' type='submit'>Move to a Machine Area</button>-->
+        <div id="sensorScanSuccess"></div>
+        <div id="locationScanSuccess"></div>
+        <div id="moveSensorToLocation"></div>
+        <div id="selectNewParent"></div>
+        <div id="successMessage"></div>
+        <button id="new-scan" class='button' type='submit'>Scan Machine QR</button>
+        <button id="reset-sensors" class='button reset-button' type='submit'>Reset Sensors</button>
+      </div>
+      <div id='reader' style=''></div>
+          `,
     
     /* IDetailPane Interface Methods */
     //  create: called when the main page needs this kind of detail pane
@@ -110,7 +136,7 @@ typeSupportHelpers.push(scannerType = {
 
     /* Private implementation-specific methods */
     resetSensors: function() {
-        let sensorArray = ["82840", "82849"];
+        let sensorArray = ["184438", "179709"];
         sensorArray.forEach((sensor) => {
             logger.info('sensor: ', sensor);
             this.queryHelper(smip.mutations.updateEquipmentParent(sensor, config.app.placeId), this.finishedDemoReset.bind(this));
@@ -123,31 +149,46 @@ typeSupportHelpers.push(scannerType = {
 
       this.toggleVisibility("moveSensorToLocation", "hide");
       this.toggleVisibility("selectNewParent", "hide");
-      document.getElementById('successMessage').textContent = 
-      `✅ A sensor has successfully been moved back to the ${payload.data.updateEquipment.place.displayName}`;
-    },
-
-    finishedMutation: function(payload, query) {
-      logger.info('inside finishedMutation ####');
-      logger.trace('payload finishedMutation', payload);
-
-      this.toggleVisibility("moveSensorToLocation", "hide");
-      this.toggleVisibility("selectNewParent", "hide");
-      document.getElementById('successMessage').textContent = 
-      `✅ The ${this.sensorMatchedToSMIP.displayName} has successfully been moved to the ${this.locationMatchedToSMIP.displayName}`;
+      
+      // Add null check before accessing place property
+      if (payload && payload.data && payload.data.updateEquipment && payload.data.updateEquipment.place) {
+        document.getElementById('successMessage').textContent = 
+          `✅ A sensor has successfully been moved back to the ${payload.data.updateEquipment.place.displayName}`;
+      } else {
+        document.getElementById('successMessage').textContent = 
+          `✅ A sensor has been successfully moved`;
+        logger.warn("Missing place information in updateEquipment response");
+      }
     },
 
     renderQrScanner: function(equipment) {
+      const self = this; // Store reference to 'this' for use in callbacks
+      
       if (equipment === "sensor") {
         logger.info('RENDERING SENSOR QR SCANNER');
-        // Render QR Scanner
+        // Render QR Scanner with bound callbacks to preserve 'this' context
         this.html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-        this.html5QrcodeScanner.render(this.onScanSuccessSensor, this.onScanError);
+        this.html5QrcodeScanner.render(
+          function(decodedText, decodedResult) {
+            // Using the stored reference to call the method
+            self.onScanSuccessSensor(decodedText, decodedResult);
+          }, 
+          function(errorMessage) {
+            self.onScanError(errorMessage);
+          }
+        );
       } else if (equipment === "machine") {
         logger.info('RENDERING MACHINE QR SCANNER');
-        // Render QR Scanner
+        // Render QR Scanner with bound callbacks
         this.html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-        this.html5QrcodeScanner.render(this.onScanSuccessMachine, this.onScanError);        
+        this.html5QrcodeScanner.render(
+          function(decodedText, decodedResult) {
+            self.onScanSuccessMachine(decodedText, decodedResult);
+          }, 
+          function(errorMessage) {
+            self.onScanError(errorMessage);
+          }
+        );       
       }
     },
 
@@ -309,4 +350,39 @@ typeSupportHelpers.push(scannerType = {
       // handle on error condition, with error message
       // logger.info('errorMessage: ', errorMessage)
     },
+    finishedMutation: function(payload, query) {
+      logger.info('inside finishedMutation');
+      logger.trace('payload from finishedMutation:', payload);
+
+      // Hide the move elements
+      this.toggleVisibility("moveSensorToLocation", "hide");
+      this.toggleVisibility("selectNewParent", "hide");
+      
+      // Check if we have valid response data with necessary properties
+      if (payload && payload.data && payload.data.updateEquipment) {
+        let successMessage;
+        
+        // Check if we have place information
+        if (payload.data.updateEquipment.place) {
+          successMessage = `✅ The ${this.sensorMatchedToSMIP.displayName} has successfully been moved to the ${payload.data.updateEquipment.place.displayName}`;
+        } else if (this.locationMatchedToSMIP) {
+          // Use cached location information if available
+          successMessage = `✅ The ${this.sensorMatchedToSMIP.displayName} has successfully been moved to the ${this.locationMatchedToSMIP.displayName}`;
+        } else {
+          // Generic success message
+          successMessage = `✅ The ${this.sensorMatchedToSMIP.displayName} has been successfully moved`;
+        }
+        
+        document.getElementById('successMessage').textContent = successMessage;
+      } else if (payload && payload.errors) {
+        // Handle error response
+        const errorMessage = payload.errors[0]?.message || "Unknown error occurred";
+        document.getElementById('successMessage').textContent = `❌ Error: ${errorMessage}`;
+        logger.error("Error in mutation response:", errorMessage);
+      } else {
+        // Generic error
+        document.getElementById('successMessage').textContent = "❌ Error: Could not update equipment location";
+        logger.error("Invalid payload structure in finishedMutation");
+      }
+    }
 });
