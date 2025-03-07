@@ -97,8 +97,7 @@ typeSupportHelpers.push(scannerType = {
           // then see what Child Equipment is in our place
           if (this.connectedToSmip) {
             logger.info('CONNECTED TO SMIP');
-            this.queryHelper(smip.queries.getEquipmentsInPlace(config.app.placeId), this.getSensors.bind(this));
-            this.queryHelper(smip.queries.getChildEquipmentsInPlace(config.app.placeId2), this.getNewParentPlaceEquipment.bind(this));
+            this.queryHelper(smip.queries.getEquipmentsInPlace(config.user.modelParentId), this.getSensors.bind(this));
           }
           logger.trace("Scanner pane html now: " + this.rootElement.innerHTML.trim());
         }
@@ -139,7 +138,7 @@ typeSupportHelpers.push(scannerType = {
         let sensorArray = ["184438", "179709"];
         sensorArray.forEach((sensor) => {
             logger.info('sensor: ', sensor);
-            this.queryHelper(smip.mutations.updateEquipmentParent(sensor, config.app.placeId), this.finishedDemoReset.bind(this));
+            this.queryHelper(smip.mutations.updateEquipmentParent(sensor, config.user.modelParentId), this.finishedDemoReset.bind(this));
         });
     },
 
