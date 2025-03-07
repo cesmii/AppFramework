@@ -77,10 +77,11 @@ typeSupportHelpers.push(scannerType = {
           // Render QR Scanner for sensor
           this.renderQrScanner('sensor');
   
-          // initially hide new-scan button
+          // initially hide buttons and status elements
           this.toggleVisibility("new-scan", "hide");
           this.toggleVisibility("sensorScanSuccess", "hide");
   
+          this.toggleVisibility("reset-sensors", "hide");
           let newScanButton = document.getElementById("new-scan");
           newScanButton.addEventListener("click", () => {
             this.renderQrScanner('machine');
@@ -88,6 +89,7 @@ typeSupportHelpers.push(scannerType = {
           });
   
           let resetSensorsButton = document.getElementById("reset-sensors");
+          resetSensorsButton.textContent = "Reset Sensor Location";
           resetSensorsButton.addEventListener("click", () => {
             logger.info("clicked reset sensors");
             this.resetSensors();
@@ -135,11 +137,22 @@ typeSupportHelpers.push(scannerType = {
 
     /* Private implementation-specific methods */
     resetSensors: function() {
-        let sensorArray = ["184438", "179709"];
-        sensorArray.forEach((sensor) => {
-            logger.info('sensor: ', sensor);
-            this.queryHelper(smip.mutations.updateEquipmentParent(sensor, config.user.modelParentId), this.finishedDemoReset.bind(this));
-        });
+      // Show a loading message first
+      document.getElementById('successMessage').textContent = "Resetting sensors to default location...";
+      this.toggleVisibility("successMessage", "show");
+      
+      // Try to reset the scanned sensor if we have one
+      if (this.sensorMatchedToSMIP && this.sensorMatchedToSMIP.id) {
+        logger.info('Resetting scanned sensor: ', this.sensorMatchedToSMIP.id);
+        this.queryHelper(
+          smip.mutations.updateEquipmentParent(this.sensorMatchedToSMIP.id, config.user.modelParentId), 
+          this.finishedDemoReset.bind(this)
+        );
+      } else {
+        // No sensor was scanned, provide feedback
+        document.getElementById('successMessage').textContent = "⚠️ No sensor was scanned to reset.";
+        logger.warn('No sensor was scanned to reset');
+      }
     },
 
     finishedDemoReset: function(payload, query) {
@@ -149,14 +162,31 @@ typeSupportHelpers.push(scannerType = {
       this.toggleVisibility("moveSensorToLocation", "hide");
       this.toggleVisibility("selectNewParent", "hide");
       
+      // Hide the reset button after it's been used
+      this.toggleVisibility("reset-sensors", "hide");
+      
+      if (payload && payload.errors) {
+        // Handle error response
+        const errorMessage = payload.errors[0]?.message || "Unknown error occurred";
+        document.getElementById('successMessage').textContent = `❌ Error resetting sensor: ${errorMessage}`;
+        logger.error("Error in reset response:", errorMessage);
+        return;
+      }
+      
       // Add null check before accessing place property
-      if (payload && payload.data && payload.data.updateEquipment && payload.data.updateEquipment.place) {
-        document.getElementById('successMessage').textContent = 
-          `✅ A sensor has successfully been moved back to the ${payload.data.updateEquipment.place.displayName}`;
+      if (payload && payload.data && payload.data.updateEquipment) {
+        let successMessage;
+        
+        if (payload.data.updateEquipment.place) {
+          successMessage = `✅ Sensor has been reset to ${payload.data.updateEquipment.place.displayName}`;
+        } else {
+          successMessage = `✅ Sensor has been reset successfully`;
+        }
+        
+        document.getElementById('successMessage').textContent = successMessage;
       } else {
-        document.getElementById('successMessage').textContent = 
-          `✅ A sensor has been successfully moved`;
-        logger.warn("Missing place information in updateEquipment response");
+        document.getElementById('successMessage').textContent = "❌ Could not reset sensor location";
+        logger.warn("Invalid payload structure in finishedDemoReset");
       }
     },
 
@@ -399,6 +429,9 @@ typeSupportHelpers.push(scannerType = {
         document.getElementById('successMessage').textContent = successMessage;
         this.toggleVisibility("successMessage", "show");
         
+        // Show the reset button now that we've moved a sensor
+        this.toggleVisibility("reset-sensors", "show");
+        
         // Add a "Scan New Sensor" button
         const selectNewParent = document.getElementById("selectNewParent");
         selectNewParent.innerHTML = '';
@@ -413,7 +446,6 @@ typeSupportHelpers.push(scannerType = {
         
         selectNewParent.appendChild(scanNewButton);
         this.toggleVisibility("selectNewParent", "show");
-        
       } else if (payload && payload.errors) {
         // Handle error response
         const errorMessage = payload.errors[0]?.message || "Unknown error occurred";
@@ -434,6 +466,7 @@ typeSupportHelpers.push(scannerType = {
       this.toggleVisibility("moveSensorToLocation", "hide");
       this.toggleVisibility("selectNewParent", "hide");
       this.toggleVisibility("successMessage", "hide");
+      this.toggleVisibility("reset-sensors", "hide");  // Hide reset button when starting fresh
       
       // Clear content
       document.getElementById('sensorScanSuccess').textContent = '';
