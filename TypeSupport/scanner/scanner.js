@@ -269,81 +269,105 @@ typeSupportHelpers.push(scannerType = {
       logger.info(`compareScanToSMIPScan result: ${decodedText}`);
     },
     toggleVisibility: function(elementId, state) {
+      const element = document.getElementById(elementId);
+      if (!element) {
+        logger.warn(`Element with ID ${elementId} not found`);
+        return;
+      }
+      
       if (state === 'hide') {
-        document.getElementById(elementId).style.visibility = "hidden";
+        element.style.display = "none"; // Use display instead of visibility
       } else if (state === 'show') {
-        document.getElementById(elementId).style.visibility = "visible";
+        element.style.display = "block"; // Use display instead of visibility
       }
     },
     onScanSuccessMachine: function(decodedText, decodedResult) {
-      logger.trace(`Scan result: ${decodedText}`, decodedResult);
-      // Handle on success condition with the decoded text or result.
+      logger.info(`Machine scan result: ${decodedText}`, decodedResult);
       this.html5QrcodeScanner.clear();
 
-      document.getElementById('instructionScan').textContent = config.app.instructionMoveSensor;
-
-      let matchedSMIPtoScan = (this.foundParentPlaceEquipment.find((attr) => attr.id === decodedText));
-      logger.trace("matchedSMIPtoScan: ", matchedSMIPtoScan);
-      this.locationMatchedToSMIP = matchedSMIPtoScan;
-
-      document.getElementById('locationScanSuccess').textContent = `✅ ${this.locationMatchedToSMIP.displayName}successfully scanned.`;
+      // Show loading state
+      document.getElementById('locationScanSuccess').textContent = `Verifying machine ID...`;
       this.toggleVisibility("locationScanSuccess", "show");
 
-      document.getElementById('moveSensorToLocation').textContent = `Do you want to move the ${this.sensorMatchedToSMIP.displayName} to the ${this.locationMatchedToSMIP.displayName}?`
+      // First verify the machine ID is valid
+      this.queryHelper(
+        smip.queries.getEquipmentById(decodedText),
+        (payload, query) => {
+          if (payload && payload.data && payload.data.equipments && payload.data.equipments.length > 0) {
+            // Found a valid machine
+            const machine = payload.data.equipments[0];
+            this.locationMatchedToSMIP = machine;
+            
+            // Show confirmation UI
+            document.getElementById('locationScanSuccess').textContent = `✅ ${machine.displayName} successfully scanned.`;
+            this.toggleVisibility("locationScanSuccess", "show");
 
-      let newButton = document.createElement("button");
-      newButton.appendChild(document.createTextNode(`Move the ${this.sensorMatchedToSMIP.displayName} to the ${this.locationMatchedToSMIP.displayName}`));
-      newButton.dataset.id = this.locationMatchedToSMIP.id;
-      newButton.classList.add(this.locationMatchedToSMIP.id);
+            // Rest of UI code...
+            document.getElementById('moveSensorToLocation').textContent = `Do you want to move the ${this.sensorMatchedToSMIP.displayName} to ${machine.displayName}?`;
+            this.toggleVisibility("moveSensorToLocation", "show");
 
-      newButton.addEventListener("click", () => {
-          let newPlaceId = this.locationMatchedToSMIP.id;
-          this.queryHelper(smip.mutations.updateEquipmentParent(this.sensorMatchedToSMIP.id, newPlaceId), this.finishedMutation.bind(this));
-      });
-      document.getElementById("selectNewParent").appendChild(newButton);
+            // Clear any previous buttons
+            const selectNewParent = document.getElementById("selectNewParent");
+            selectNewParent.innerHTML = '';
 
+            let newButton = document.createElement("button");
+            newButton.appendChild(document.createTextNode(`Move the ${this.sensorMatchedToSMIP.displayName} to ${machine.displayName}`));
+            newButton.dataset.id = machine.id;
+            newButton.classList.add('button');
+
+            newButton.addEventListener("click", () => {
+              // Show loading state
+              document.getElementById('moveSensorToLocation').textContent = `Moving ${this.sensorMatchedToSMIP.displayName} to ${machine.displayName}...`;
+              
+              // Disable the button while operation is in progress
+              newButton.disabled = true;
+              newButton.textContent = "Moving...";
+              
+              // Make the API call
+              this.queryHelper(
+                smip.mutations.updateEquipmentParent(this.sensorMatchedToSMIP.id, machine.id), 
+                this.finishedMutation.bind(this)
+              );
+            });
+            
+            selectNewParent.appendChild(newButton);
+            this.toggleVisibility("selectNewParent", "show");
+          } else {
+            // Invalid machine ID
+            document.getElementById('locationScanSuccess').textContent = `❌ No machine found with ID: ${decodedText}`;
+            this.toggleVisibility("locationScanSuccess", "show");
+          }
+        }
+      );
     },
     onScanSuccessSensor: function(decodedText, decodedResult) {
       // Handle on success condition with the decoded text or result.
       logger.info(`Scan result: ${decodedText}`, decodedResult);
 
       this.html5QrcodeScanner.clear();
-
-      this.toggleVisibility("new-scan", "show");
-
-      logger.trace('this.foundSensorData: ', this.foundSensorData);
-      // document.getElementById("scaninput").value=decodedText;
-
-      // use decodedText for SMIP call
-      // smip call goes here
-      // this.foundSensorData has the sensor data we found in the SMIP
-
-      let matchedSMIPtoScan = (this.foundSensorData.find((attr) => attr.stringValue === decodedText));
-      // we matched the decodedText with a known new sensor
+      
+      // Match the sensor with SMIP data - remove "let" here as it's already declared elsewhere
+      const matchedSMIPtoScan = (this.foundSensorData.find((attr) => attr.stringValue === decodedText));
       logger.trace("matchedSMIPtoScan: ", matchedSMIPtoScan);
+      
+      // Check if sensor was found
+      if (!matchedSMIPtoScan) {
+        document.getElementById('sensorScanSuccess').textContent = `❌ No sensor found with MACID: ${decodedText}`;
+        this.toggleVisibility("sensorScanSuccess", "show");
+        return;
+      }
+      
       this.sensorMatchedToSMIP = matchedSMIPtoScan;
 
-      // sensor scan success message
-      // document.querySelector('[data-name="sensorName"]').textContent = matchedSMIPtoScan.displayName;
+      // Show success message for sensor
       document.getElementById('sensorScanSuccess').textContent = `✅ ${this.sensorMatchedToSMIP.displayName} successfully scanned.`;
       this.toggleVisibility("sensorScanSuccess", "show");
-
-      // Render QR Scanner for machine
-      document.getElementById('instructionScan').textContent = config.app.instructionScanMachine;
-
-      // move matched ID to new parent
-      // - list parents on screen
-      // wire up the button
-      const openModal = document.querySelector(".open-button");
-      const closeModal = document.querySelector(".close-button");
-
-      openModal.addEventListener("click", () => {
-        modal.showModal();
-      });
-      // - user chooses parent & confirms move
-      // - move sensor to new, selected parent
-      // await delay(2000);
       
+      // Show the button to scan machine
+      this.toggleVisibility("new-scan", "show");
+      
+      // Update instruction for next step
+      document.getElementById('instructionScan').textContent = config.app.instructionScanMachine;
     },
     onScanError: function(errorMessage) {
       // handle on error condition, with error message
@@ -353,7 +377,7 @@ typeSupportHelpers.push(scannerType = {
       logger.info('inside finishedMutation');
       logger.trace('payload from finishedMutation:', payload);
 
-      // Hide the move elements
+      // Hide the loading message
       this.toggleVisibility("moveSensorToLocation", "hide");
       this.toggleVisibility("selectNewParent", "hide");
       
@@ -373,15 +397,52 @@ typeSupportHelpers.push(scannerType = {
         }
         
         document.getElementById('successMessage').textContent = successMessage;
+        this.toggleVisibility("successMessage", "show");
+        
+        // Add a "Scan New Sensor" button
+        const selectNewParent = document.getElementById("selectNewParent");
+        selectNewParent.innerHTML = '';
+        
+        let scanNewButton = document.createElement("button");
+        scanNewButton.appendChild(document.createTextNode("Scan New Sensor"));
+        scanNewButton.classList.add('button');
+        scanNewButton.addEventListener("click", () => {
+          this.resetUI();
+          this.renderQrScanner('sensor');
+        });
+        
+        selectNewParent.appendChild(scanNewButton);
+        this.toggleVisibility("selectNewParent", "show");
+        
       } else if (payload && payload.errors) {
         // Handle error response
         const errorMessage = payload.errors[0]?.message || "Unknown error occurred";
         document.getElementById('successMessage').textContent = `❌ Error: ${errorMessage}`;
+        this.toggleVisibility("successMessage", "show");
         logger.error("Error in mutation response:", errorMessage);
       } else {
         // Generic error
         document.getElementById('successMessage').textContent = "❌ Error: Could not update equipment location";
+        this.toggleVisibility("successMessage", "show");
         logger.error("Invalid payload structure in finishedMutation");
       }
+    },
+    resetUI: function() {
+      // Hide all dynamic elements
+      this.toggleVisibility("sensorScanSuccess", "hide");
+      this.toggleVisibility("locationScanSuccess", "hide");
+      this.toggleVisibility("moveSensorToLocation", "hide");
+      this.toggleVisibility("selectNewParent", "hide");
+      this.toggleVisibility("successMessage", "hide");
+      
+      // Clear content
+      document.getElementById('sensorScanSuccess').textContent = '';
+      document.getElementById('locationScanSuccess').textContent = '';
+      document.getElementById('moveSensorToLocation').textContent = '';
+      document.getElementById('successMessage').textContent = '';
+      document.getElementById('selectNewParent').innerHTML = '';
+      
+      // Reset instruction
+      document.getElementById('instructionScan').textContent = config.app.instructionScanSensor;
     }
 });
